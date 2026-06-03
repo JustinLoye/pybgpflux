@@ -99,10 +99,22 @@ async def download_all(urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: i
                     logging.error(f"[{collector}] Failed to download {url}: {e}")
             await async_q.put(None)  # sentinel
 
-        async with asyncio.TaskGroup() as tg:
-            for data_type in urls:
-                for collector, (url_list, async_q) in urls[data_type].items():
-                    tg.create_task(worker(collector, url_list, async_q))
+        await asyncio.gather(
+            *(worker(collector, url_list, async_q)
+              for data_type in urls
+              for collector, (url_list, async_q) in urls[data_type].items())
+        )
+
+
+async def safe_download_all(urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: int):
+    """Run download_all and guarantee sentinels are pushed on crash."""
+    try:
+        await download_all(urls, cache_dir, max_concurrent)
+    except BaseException as e:
+        logging.error(f"Download orchestrator crashed: {e}")
+        for data_type in urls:
+            for _, (_, async_q) in urls[data_type].items():
+                await async_q.put(None)
 
 
 class RCStream:
@@ -136,7 +148,7 @@ class RCStream:
             if filepath is None:
                 break
 
-            logging.info(f"🧠 [{self.collector}] Parsing started for {filepath}")
+            logging.debug(f"🧠 [{self.collector}] Parsing started for {filepath}")
             parser = self.parser_cls(
                 filepath=filepath,
                 is_rib=is_rib,
@@ -148,6 +160,6 @@ class RCStream:
             if not self.is_caching:
                 try:
                     os.remove(filepath)
-                    logging.info(f"🗑️ [{self.collector}] Cleaned up {filepath}")
+                    logging.debug(f"🗑️ [{self.collector}] Cleaned up {filepath}")
                 except OSError as e:
                     logging.error(f"Failed to delete {filepath}: {e}")

@@ -28,7 +28,7 @@ from pybgpflux.utils import Directory, get_shared_memory
 from pybgpflux.downloader import (
     PREFETCH_SIZE,
     RCStream,
-    download_all,
+    safe_download_all,
 )
 
 name2parser = {
@@ -219,7 +219,7 @@ class BGPStream:
 
             # Kick off all download tasks in the background thread
             asyncio.run_coroutine_threadsafe(
-                download_all(self.urls, cache_dir.name, self.max_concurrent_downloads),
+                safe_download_all(self.urls, cache_dir.name, self.max_concurrent_downloads),
                 loop,
             )
 
