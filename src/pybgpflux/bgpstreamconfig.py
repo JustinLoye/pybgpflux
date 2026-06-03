@@ -79,13 +79,6 @@ class BGPStreamConfig(BaseModel):
             "Default (False) to reduce RAM usage."
         ),
     )
-    chunk_time: datetime.timedelta | None = Field(
-        default=datetime.timedelta(hours=2),
-        description=(
-            "Interval for the fetch/parse cycles (benefits: avoid long prefetch time + periodic temps cleanup when caching is disabled)."
-            "Lower value means less RAM/disk used at the cost of performance."
-        ),
-    )
     parser: Literal["pybgpkit", "bgpkit", "pybgpstream", "bgpdump"] = Field(
         default="pybgpkit",
         description=(
@@ -140,7 +133,6 @@ class BGPStreamConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate(self) -> "BGPStreamConfig":
-
         if (self.start_time is None) ^ (self.end_time is None):
             raise ValueError(
                 "Provide both start and end times, or leave both as None for live mode."
