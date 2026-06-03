@@ -28,7 +28,6 @@ def config_with_rib():
         end_time=datetime.datetime(2010, 9, 1, 9, 0),
         collectors=["route-views.wide", "rrc06"],
         data_types=["ribs"],
-        chunk_time=None,
     )
     yield rib_config
 
@@ -45,21 +44,6 @@ def config_with_cache():
         max_concurrent_downloads=8,
     )
     yield cache_config
-
-
-@pytest.fixture
-def config_with_chunk():
-    """Configuration with a chunking mechanism to balance fetch/parse."""
-    chunk_config = BGPStreamConfig(
-        start_time=datetime.datetime(2010, 9, 1, 0, 0),
-        end_time=datetime.datetime(2010, 9, 1, 1, 59),
-        collectors=["route-views.sydney", "route-views.wide"],
-        data_types=["updates"],
-        cache_dir=cache_dir,
-        max_concurrent_downloads=8,
-        chunk_time=datetime.timedelta(minutes=15),
-    )
-    yield chunk_config
 
 
 @pytest.fixture
@@ -98,18 +82,6 @@ def pybgpstream_stream_with_cache(config_with_cache):
     return make_bgpstream(config_with_cache)
 
 
-@pytest.fixture
-def pybgpflux_stream_with_chunk(config_with_chunk):
-    """A BGPStream object using the config with chunking mechanism."""
-    return BGPStream.from_config(config_with_chunk)
-
-
-@pytest.fixture
-def pybgpstream_stream_with_chunk(config_with_chunk):
-    """A pybgpstream.BGPStream object using the config with chunking mechanism."""
-    return make_bgpstream(config_with_chunk)
-
-
 def test_pybgpflux(pybgpflux_stream, pybgpstream_stream, config):
     """Test if the streamw are consistent and if they return the same number of elements"""
     assert validate_stream(pybgpflux_stream, config) == validate_stream(
@@ -134,17 +106,6 @@ def test_pybgpflux_with_cache(
         pybgpflux_stream_with_cache, config_with_cache
     ) == validate_stream(
         pybgpstream_stream_with_cache, config_with_cache
-    )
-
-
-def test_pybgpflux_with_chunk(
-    pybgpflux_stream_with_chunk, pybgpstream_stream_with_chunk, config_with_chunk
-):
-    """Test if the streams are consistent and if they return the same number of elements (WITH CACHE)"""
-    assert validate_stream(
-        pybgpflux_stream_with_chunk, config_with_chunk
-    ) == validate_stream(
-        pybgpstream_stream_with_chunk, config_with_chunk
     )
 
 
@@ -192,14 +153,8 @@ def validate_stream(
     if config.filters and config.filters.peer_asn:
         assert peer_asns == set(config.filters.peer_asn)
 
-    if "updates" in config.data_types:
-        assert all([a <= b for a, b in pairwise(times)])
-    else:
-        # For RIB only, I don't do any sorting for performance.
-        # However a very small number of BGP elems have different timestamps
-        # Which after streams stitching make the final stream slightly unordered
-        # We don't care much for this edge case so I relax the test
-        assert sum([a <= b for a, b in pairwise(times)]) > 0.999 * len(times)
+    assert all([a <= b for a, b in pairwise(times)])
+        
     assert times[0] >= config.start_time.timestamp()
     assert times[-1] <= config.end_time.timestamp()
 
