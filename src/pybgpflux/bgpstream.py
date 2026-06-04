@@ -219,7 +219,9 @@ class BGPStream:
 
             # Kick off all download tasks in the background thread
             asyncio.run_coroutine_threadsafe(
-                safe_download_all(self.urls, cache_dir.name, self.max_concurrent_downloads),
+                safe_download_all(
+                    self.urls, cache_dir.name, self.max_concurrent_downloads
+                ),
                 loop,
             )
 
@@ -237,9 +239,13 @@ class BGPStream:
                 for collector, (_, async_q) in self.urls[data_type].items()
             ]
 
-            for bgpelem in merge(*streams, key=attrgetter("time")):
-                if self.ts_start <= bgpelem.time <= self.ts_end:
-                    yield bgpelem
+            try:
+                for bgpelem in merge(*streams, key=attrgetter("time")):
+                    if self.ts_start <= bgpelem.time <= self.ts_end:
+                        yield bgpelem
+            finally:
+                loop.call_soon_threadsafe(loop.stop)
+                bg_thread.join(timeout=5.0)
 
     def _iter_live(self) -> Iterator[BGPElement]:
         ris_collectors = [

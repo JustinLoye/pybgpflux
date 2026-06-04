@@ -1,6 +1,7 @@
 import asyncio
 import os
 import re
+import time
 import logging
 from typing import Iterator
 
@@ -17,10 +18,82 @@ MAX_RETRIES = 10
 INITIAL_BACKOFF = 0.2  # seconds
 REQUEST_DELAY = 0.05  # 50ms
 PREFETCH_SIZE = 1
+LOCK_TIMEOUT = 1800  # seconds – fallback if PID check fails
+LOCK_POLL_INTERVAL = 1.0  # seconds
 
 
 RCUrlsWithQueues = dict[str, dict[str, tuple[list, asyncio.Queue]]]
 """Data type -> route collector -> (urls, prefetch queue)"""
+
+
+def _pid_alive(pid: int) -> bool:
+    """Check whether a process is still running."""
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True  # exists, we just can't signal it
+
+
+def _try_acquire_lock(filepath: str) -> bool:
+    """Atomically create a lock file and write our PID. Returns True if acquired."""
+    lock_path = f"{filepath}.lock"
+    try:
+        fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        os.write(fd, str(os.getpid()).encode())
+        os.close(fd)
+        return True
+    except FileExistsError:
+        return False
+
+
+def _release_lock(filepath: str) -> None:
+    """Remove the lock file, ignoring if already gone."""
+    try:
+        os.remove(f"{filepath}.lock")
+    except FileNotFoundError:
+        pass
+
+
+async def _wait_for_peer(filepath: str, timeout: float = LOCK_TIMEOUT) -> bool:
+    """Poll until the file appears, the lock disappears, or the lock holder dies.
+
+    Returns True if the final file exists, False if the caller should retry.
+    """
+    lock_path = f"{filepath}.lock"
+    deadline = time.monotonic() + timeout
+
+    while time.monotonic() < deadline:
+        if os.path.exists(filepath):
+            return True
+        if not os.path.exists(lock_path):
+            return False  # peer released lock but file missing → peer failed, retry
+        # Check if lock holder is still alive
+        try:
+            with open(lock_path) as f:
+                pid = int(f.read().strip())
+            if not _pid_alive(pid):
+                logging.warning(
+                    f"Lock holder (PID {pid}) is dead. Breaking lock for {filepath}"
+                )
+                try:
+                    os.remove(lock_path)
+                except FileNotFoundError:
+                    pass
+                return False
+        except (ValueError, FileNotFoundError, OSError):
+            pass  # lock file vanished or unreadable, retry next iteration
+        await asyncio.sleep(LOCK_POLL_INTERVAL)
+
+    # Timeout – break stale lock
+    logging.warning(f"Lock timeout ({timeout}s) for {filepath}. Breaking lock.")
+    try:
+        os.remove(lock_path)
+    except FileNotFoundError:
+        pass
+    return False
 
 
 def generate_cache_filename(url: str) -> str:
@@ -58,28 +131,49 @@ async def download_file(
     client: httpx.AsyncClient,
     semaphore: asyncio.Semaphore,
 ) -> str:
-    async with semaphore:
+    while True:
+        # Fast path: already fully downloaded
         if os.path.exists(filepath):
             logging.debug(f"{filepath} is a cache hit")
             return filepath
-        for attempt in range(MAX_RETRIES + 1):
+
+        if _try_acquire_lock(filepath):
+            # We are the downloader
             try:
-                await asyncio.sleep(REQUEST_DELAY)
-                async with client.stream("GET", url) as resp:
-                    resp.raise_for_status()
-                    temp_filepath = f"{filepath}.tmp"
-                    async with aiofiles.open(temp_filepath, mode="wb") as fd:
-                        async for chunk in resp.aiter_bytes(chunk_size=32768):
-                            await fd.write(chunk)
-                    os.rename(temp_filepath, filepath)
+                # Double-check after acquiring lock
+                if os.path.exists(filepath):
                     return filepath
-            except (httpx.HTTPError, asyncio.TimeoutError) as e:
-                if attempt < MAX_RETRIES:
-                    await asyncio.sleep(INITIAL_BACKOFF * (2**attempt))
-                else:
-                    if os.path.exists(f"{filepath}.tmp"):
-                        os.remove(f"{filepath}.tmp")
-                    raise RuntimeError(f"Cannot download {url}") from e
+
+                temp_filepath = f"{filepath}.{os.getpid()}.tmp"
+                async with semaphore:
+                    for attempt in range(MAX_RETRIES + 1):
+                        try:
+                            await asyncio.sleep(REQUEST_DELAY)
+                            async with client.stream("GET", url) as resp:
+                                resp.raise_for_status()
+                                async with aiofiles.open(
+                                    temp_filepath, mode="wb"
+                                ) as fd:
+                                    async for chunk in resp.aiter_bytes(
+                                        chunk_size=32768
+                                    ):
+                                        await fd.write(chunk)
+                            os.rename(temp_filepath, filepath)
+                            return filepath
+                        except (httpx.HTTPError, asyncio.TimeoutError) as e:
+                            if attempt < MAX_RETRIES:
+                                await asyncio.sleep(INITIAL_BACKOFF * (2**attempt))
+                            else:
+                                if os.path.exists(temp_filepath):
+                                    os.remove(temp_filepath)
+                                raise RuntimeError(f"Cannot download {url}") from e
+            finally:
+                _release_lock(filepath)
+        else:
+            # Another process/thread is downloading this file – wait for it
+            if await _wait_for_peer(filepath):
+                return filepath  # peer succeeded
+            # peer failed or lock was stale → loop back and retry
 
 
 async def download_all(urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: int):
@@ -100,13 +194,17 @@ async def download_all(urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: i
             await async_q.put(None)  # sentinel
 
         await asyncio.gather(
-            *(worker(collector, url_list, async_q)
-              for data_type in urls
-              for collector, (url_list, async_q) in urls[data_type].items())
+            *(
+                worker(collector, url_list, async_q)
+                for data_type in urls
+                for collector, (url_list, async_q) in urls[data_type].items()
+            )
         )
 
 
-async def safe_download_all(urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: int):
+async def safe_download_all(
+    urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: int
+):
     """Run download_all and guarantee sentinels are pushed on crash."""
     try:
         await download_all(urls, cache_dir, max_concurrent)
