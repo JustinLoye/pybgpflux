@@ -85,6 +85,13 @@ class BGPStreamConfig(BaseModel):
             "MRT files parser. Default `pybgpkit` is installed but slow, the others are system dependencies."
         ),
     )
+    remote_parse: bool | None = Field(
+        default=True,
+        description=(
+            "Parse directly from a remote source without saving archives locally or in RAM. "
+            "Currently supported only by the pybgpstream parser."
+        ),
+    )
 
     @field_validator("start_time", "end_time", mode="before")
     @classmethod
@@ -133,16 +140,23 @@ class BGPStreamConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate(self) -> "BGPStreamConfig":
+        
         if (self.start_time is None) ^ (self.end_time is None):
             raise ValueError(
                 "Provide both start and end times, or leave both as None for live mode."
             )
+            
+        
         if not self.is_live():
             assert self.start_time < self.end_time
         # Force data_type to update for live mode
         else:
             if self.data_types is None:
                 self.data_types = ["updates"]
+                       
+        # Disable remote parsing when caching
+        if self.cache_dir:
+            self.remote_parse = False
 
         return self
 
