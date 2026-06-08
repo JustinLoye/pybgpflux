@@ -19,12 +19,17 @@ class BGPParser(Protocol):
     is_rib: bool
     collector: str
     filters: FilterOptions
+    supports_remote_parsing: bool
 
     def __iter__(self) -> Iterator[BGPElement]: ...
 
 
 class PyBGPKITParser(BGPParser):
     """Use BGPKIT Python bindings (default parser). Slower than other alternatives but easier to ship (no system dependencies)."""
+    
+    # In theory bgpkit supports remote parsing, but in practice I get unreliable results
+    # due to connection drop when the kmerge is slow (big RIBs)
+    supports_remote_parsing=False
 
     def __init__(
         self,
@@ -76,6 +81,10 @@ class PyBGPKITParser(BGPParser):
 
 class BGPKITParser(BGPParser):
     """Run BGPKIT's CLI `bgpkit-parser` as a subprocess."""
+    
+    # In theory bgpkit supports remote parsing, but in practice I get unreliable results
+    # due to connection drop when the kmerge is slow (big RIBs)
+    supports_remote_parsing=False
 
     def __init__(
         self,
@@ -151,6 +160,8 @@ class BGPKITParser(BGPParser):
 
 class PyBGPStreamParser(BGPParser):
     """Use pybgpstream as a MRT parser with the `singlefile` data interface"""
+    
+    supports_remote_parsing=True
 
     def __init__(
         self,
@@ -203,7 +214,9 @@ class PyBGPStreamParser(BGPParser):
 
 
 class BGPdumpParser(BGPParser):
-    """Run bgpdump as a subprocess. I might have over-engineered the filtering."""
+    """Run bgpdump as a subprocess."""
+    
+    supports_remote_parsing = False
 
     def __init__(self, filepath, is_rib, collector, filters):
         self.filepath = filepath

@@ -176,21 +176,29 @@ async def download_file(
             # peer failed or lock was stale → loop back and retry
 
 
-async def download_all(urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: int):
+async def download_all(urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: int, is_remote_parsing: bool):
     """Single async entry point: one client, one global semaphore, one task per data_type,collector."""
     dl_semaphore = asyncio.Semaphore(max_concurrent)
 
     async with httpx.AsyncClient(timeout=httpx.Timeout(None, read=300.0)) as client:
 
         async def worker(collector: str, url_list: list[str], async_q: asyncio.Queue):
-            for url in url_list:
-                filename = generate_cache_filename(url)
-                filepath = os.path.join(cache_dir, filename)
-                try:
-                    path = await download_file(url, filepath, client, dl_semaphore)
-                    await async_q.put(path)  # blocks when queue is full (backpressure)
-                except Exception as e:
-                    logging.error(f"[{collector}] Failed to download {url}: {e}")
+            # For remote parsing, don't need to prefetch. So simply queue url.
+            if is_remote_parsing:
+                for url in url_list:
+                    await async_q.put(url)
+                
+            # For local parsing we need to download and communicate to consumer by putting the filepath in the queue
+            else:
+                for url in url_list:
+                    filename = generate_cache_filename(url)
+                    filepath = os.path.join(cache_dir, filename)
+                    try:
+                        path = await download_file(url, filepath, client, dl_semaphore)
+                        await async_q.put(path)  # blocks when queue is full (backpressure)
+                    except Exception as e:
+                        logging.error(f"[{collector}] Failed to download {url}: {e}")
+                
             await async_q.put(None)  # sentinel
 
         await asyncio.gather(
@@ -203,11 +211,11 @@ async def download_all(urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: i
 
 
 async def safe_download_all(
-    urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: int
+    urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: int, is_remote_parsing: bool
 ):
     """Run download_all and guarantee sentinels are pushed on crash."""
     try:
-        await download_all(urls, cache_dir, max_concurrent)
+        await download_all(urls, cache_dir, max_concurrent, is_remote_parsing)
     except BaseException as e:
         logging.error(f"Download orchestrator crashed: {e}")
         for data_type in urls:
@@ -225,6 +233,7 @@ class RCStream:
         collector: str,
         filters: FilterOptions,
         is_caching: bool,
+        is_remote_parsing: bool,
         async_q: asyncio.Queue,
         loop: asyncio.AbstractEventLoop,
     ):
@@ -233,6 +242,7 @@ class RCStream:
         self.collector = collector
         self.filters = filters
         self.is_caching = is_caching
+        self.is_remote_parsing = is_remote_parsing
         self._q = async_q
         self._loop = loop
 
@@ -255,7 +265,7 @@ class RCStream:
             )
             yield from parser
 
-            if not self.is_caching:
+            if not (self.is_remote_parsing or self.is_caching):
                 try:
                     os.remove(filepath)
                     logging.debug(f"🗑️ [{self.collector}] Cleaned up {filepath}")

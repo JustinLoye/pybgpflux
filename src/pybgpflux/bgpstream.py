@@ -115,6 +115,7 @@ class BGPStream:
         max_concurrent_downloads: int | None = 10,
         ram_fetch: bool | None = True,
         parser_name: str | None = "pybgpkit",
+        remote_parse: bool | None = True,
         jitter_buffer_delay: float | None = 10.0,
     ):
         """Initialize a BGP stream.
@@ -156,6 +157,12 @@ class BGPStream:
             self.parser_name = "pybgpkit"
         else:
             self.parser_name = parser_name
+        if not remote_parse:
+            self.remote_parse = True
+        else:
+            self.remote_parse = remote_parse
+        if cache_dir:
+            self.remote_parse = False
 
         self.broker = bgpkit.Broker()
         self.parser_cls: BGPParser = name2parser[parser_name]
@@ -198,6 +205,7 @@ class BGPStream:
             is_caching = True
             cache_dir = Directory(self.cache_dir)
         else:
+            # Note that if the parser supports remote parsing, cache_dir will not be populated
             is_caching = False
             if self.ram_fetch:
                 cache_dir = TemporaryDirectory(dir=get_shared_memory())
@@ -217,10 +225,12 @@ class BGPStream:
             bg_thread.start()
             ready.wait()
 
+            is_remote_parsing = not is_caching and self.parser_cls.supports_remote_parsing and self.remote_parse
+            
             # Kick off all download tasks in the background thread
             asyncio.run_coroutine_threadsafe(
                 safe_download_all(
-                    self.urls, cache_dir.name, self.max_concurrent_downloads
+                    self.urls, cache_dir.name, self.max_concurrent_downloads, is_remote_parsing
                 ),
                 loop,
             )
@@ -232,6 +242,7 @@ class BGPStream:
                     collector,
                     self.filters,
                     is_caching,
+                    is_remote_parsing,
                     async_q,
                     loop,
                 )
@@ -304,6 +315,7 @@ class BGPStream:
                     else 10,
                     ram_fetch=config.ram_fetch if config.ram_fetch else None,
                     parser_name=config.parser if config.parser else "pybgpkit",
+                    remote_parse=config.remote_parse if config.remote_parse else True
                 )
             else:
                 return cls(
