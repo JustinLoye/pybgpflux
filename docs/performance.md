@@ -4,10 +4,10 @@ Tips and benchmarks for optimal PyBGPFlux performance.
 
 ## Performance Overview
 
-PyBGPFlux achieves significant performance improvements over PyBGPStream for update processing:
+PyBGPFlux achieves performance on par with PyBGPStream:
 
 - **Updates**: 3–10× faster than PyBGPStream
-- **RIBs**: Currently 3–4× slower (optimization in progress)
+- **RIBs**: Currently 3–4× slower
 - **Memory**: Minimal due to lazy loading
 
 For detailed benchmark results, see [perf.md](https://github.com/JustinLoye/pybgpflux/blob/main/perf.md) in the repository.
@@ -17,7 +17,7 @@ For detailed benchmark results, see [perf.md](https://github.com/JustinLoye/pybg
 The biggest performance factor is parser choice:
 
 ```python
-# Fastest: bgpkit-parser (10x speedup)
+# Fast: bgpkit-parser
 stream = BGPStream.from_config(config, parser_name="bgpkit")
 
 # Slow but no dependencies: pybgpkit (baseline)
@@ -27,7 +27,7 @@ stream = BGPStream.from_config(config, parser_name="pybgpkit")
 stream = BGPStream.from_config(config, parser_name="bgpdump")
 ```
 
-**Recommendation**: Install `bgpkit-parser` for production use.
+**Recommendation**: Install `bgpkit-parser`.
 
 ## Filtering for Performance
 
@@ -52,21 +52,6 @@ stream = BGPStream(
 )
 ```
 
-## Concurrent Downloads
-
-Control parallel downloads:
-
-```python
-# Default: 10 concurrent downloads
-stream = BGPStream(..., max_concurrent_downloads=10)
-
-# For memory-constrained systems
-stream = BGPStream(..., max_concurrent_downloads=5)
-
-# For high-throughput systems with plenty of memory
-stream = BGPStream(..., max_concurrent_downloads=20)
-```
-
 ## RAM Disk Usage
 
 Use RAM disk (if available) for temporary file storage:
@@ -79,7 +64,7 @@ stream = BGPStream(..., ram_fetch=True)
 stream = BGPStream(..., ram_fetch=False)
 ```
 
-**Performance benefit**: 2–3× faster I/O on systems with sufficient free RAM.
+**Performance benefit**: faster I/O and less disk write on systems with sufficient free RAM.
 
 ## Caching Strategy
 
@@ -99,22 +84,16 @@ stream2 = BGPStream(
 )
 ```
 
-**Benefit**: Subsequent runs skip downloads entirely.
+## Remote Parsing
 
-## Chunk Time Settings
-
-Set the archive prefetch/parse interval
+When using the `pybgpstream` parser, enable remote parsing to skip writing to disk entirely (files are parsed directly from their remote URLs):
 
 ```python
-# Default: 2 hours per chunk
-stream = BGPStream(..., chunk_time=7200)
-
-# Smaller chunks: more requests but finer control
-stream = BGPStream(..., chunk_time=1800)  # 30 minutes
-
-# Larger chunks: fewer requests, more data at once
-stream = BGPStream(..., chunk_time=86400)  # 1 day
+# No local copy written at all (default when parser="pybgpstream")
+stream = BGPStream(..., parser_name="pybgpstream", remote_parse=True)
 ```
+
+This is the lowest-latency option for one-off queries: it avoids both disk and RAM writes. However the throughput (BGP elems per second) is generally lower. Not available for other parsers.
 
 ## Memory Optimization
 
@@ -138,23 +117,16 @@ print(f"Processed {element_count} elements")
 
 ## Troubleshooting Performance
 
-### Slow Downloads
-
-1. Check network connectivity
-2. Reduce `max_concurrent_downloads` if bandwidth is limited
-3. Use `cache_dir` to avoid re-downloading
-4. Consider using smaller time windows
-
 ### High Memory Usage
 
-1. Reduce `max_concurrent_downloads` to 5 or less
-2. Set `ram_fetch=False` to use disk instead of RAM
-3. Process elements in streaming fashion, don't accumulate
+1. Set `ram_fetch=False` to use disk instead of RAM
+2. Process elements in streaming fashion, don't accumulate
 
 ### Slow Parsing
 
-1. Switch the parser from the default`pybgpkit`
+1. Switch the parser from the default `pybgpkit`
 2. Use more specific filters to reduce parsing load
+3. Don't use remote parsing
 
 ## Further Reading
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.1] - 2026-06-08
+
+### Added
+
+- Remote parsing support for the `pybgpstream` parser backend. When `remote_parse=True` (default) and `pybgpstream` is selected, MRT files are parsed directly from the remote URL without downloading to disk or RAM.
+
+### Fixed
+
+- Prevent cache miss data race: concurrent processes writing the same cache file are now coordinated with a PID-based lock file, preventing partial reads.
+- Background prefetch thread is now properly shut down after the stream is exhausted or abandoned.
+
+### Removed
+
+- Removed `chunk_time` parameter and chunked fetch/parse cycles (replaced by always-on async prefetch queues).
+
 ## [0.5.0] - 2026-05-14
 
 ### Changed

@@ -64,7 +64,8 @@ config = BGPStreamConfig(
 )
 ```
 
-**Important**: 
+**Important**:
+
 - Datetimes are assumed to be UTC if no timezone is specified
 - Both `start_time` and `end_time` must be provided together, or both left as `None`
 - Leaving both times as `None` enables live mode
@@ -81,6 +82,7 @@ config = BGPStreamConfig(
 ```
 
 Common collectors:
+
 - `route-views.*` - Route Views collectors
 - `rrc0*` - RIPE NCC RIS collectors
 - Full list available via BGPKIT Broker API
@@ -154,15 +156,28 @@ config = BGPStreamConfig(
     cache_dir="/tmp/bgp_cache",           # Directory for downloaded files
     ram_fetch=True,                        # Use /dev/shm (Linux) or /Volumes/RAMDisk (macOS) when cache is disabled
     max_concurrent_downloads=10,           # Number of parallel downloads
-    chunk_time=datetime.timedelta(hours=2),  # Process data in intervals
 )
 ```
 
 **Parameter details:**
-- `cache_dir`: Persistent storage for MRT files. Reused across runs.
+
+- `cache_dir`: Persistent storage for MRT files. Reused across runs. Setting this disables remote parsing.
 - `ram_fetch`: When caching is disabled, use shared memory instead of disk temp space. Improves performance at higher RAM cost.
 - `max_concurrent_downloads`: Balance between download speed and resource consumption.
-- `chunk_time`: Interval for fetch/parse cycles. Smaller intervals reduce memory usage at the cost of throughput.
+
+### Remote Parsing
+
+When using the `pybgpstream` parser, PyBGPFlux can parse MRT archives directly from their remote URLs without saving them to disk. This is the default behaviour and requires no extra configuration:
+
+```python
+config = BGPStreamConfig(
+    ...,
+    parser="pybgpstream",
+    remote_parse=True,   # default — skip local download entirely
+)
+```
+
+Remote parsing is automatically disabled when `cache_dir` is set. To force local downloading even without a cache directory, set `remote_parse=False`.
 
 ## Direct BGPStream Constructor
 
