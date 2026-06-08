@@ -671,6 +671,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#remote-parsing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remote Parsing
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1193,6 +1204,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#remote-parsing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remote Parsing
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1298,10 +1320,12 @@
     <span class="n">collectors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;route-views.wide&quot;</span><span class="p">],</span>
 <span class="p">)</span>
 </code></pre></div>
-<p><strong>Important</strong>: 
-- Datetimes are assumed to be UTC if no timezone is specified
-- Both <code>start_time</code> and <code>end_time</code> must be provided together, or both left as <code>None</code>
-- Leaving both times as <code>None</code> enables live mode</p>
+<p><strong>Important</strong>:</p>
+<ul>
+<li>Datetimes are assumed to be UTC if no timezone is specified</li>
+<li>Both <code>start_time</code> and <code>end_time</code> must be provided together, or both left as <code>None</code></li>
+<li>Leaving both times as <code>None</code> enables live mode</li>
+</ul>
 <h3 id="collector-selection">Collector Selection<a class="headerlink" href="#collector-selection" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># Single or multiple collectors</span>
 <span class="n">config</span> <span class="o">=</span> <span class="n">BGPStreamConfig</span><span class="p">(</span>
@@ -1310,10 +1334,12 @@
     <span class="n">collectors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;route-views.wide&quot;</span><span class="p">,</span> <span class="s2">&quot;route-views.sydney&quot;</span><span class="p">,</span> <span class="s2">&quot;rrc04&quot;</span><span class="p">],</span>
 <span class="p">)</span>
 </code></pre></div>
-<p>Common collectors:
-- <code>route-views.*</code> - Route Views collectors
-- <code>rrc0*</code> - RIPE NCC RIS collectors
-- Full list available via BGPKIT Broker API</p>
+<p>Common collectors:</p>
+<ul>
+<li><code>route-views.*</code> - Route Views collectors</li>
+<li><code>rrc0*</code> - RIPE NCC RIS collectors</li>
+<li>Full list available via BGPKIT Broker API</li>
+</ul>
 <h3 id="data-types">Data Types<a class="headerlink" href="#data-types" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># RIBs: Complete routing table snapshots</span>
 <span class="n">config</span> <span class="o">=</span> <span class="n">BGPStreamConfig</span><span class="p">(</span>
@@ -1373,14 +1399,23 @@
     <span class="n">cache_dir</span><span class="o">=</span><span class="s2">&quot;/tmp/bgp_cache&quot;</span><span class="p">,</span>           <span class="c1"># Directory for downloaded files</span>
     <span class="n">ram_fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                        <span class="c1"># Use /dev/shm (Linux) or /Volumes/RAMDisk (macOS) when cache is disabled</span>
     <span class="n">max_concurrent_downloads</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>           <span class="c1"># Number of parallel downloads</span>
-    <span class="n">chunk_time</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>  <span class="c1"># Process data in intervals</span>
 <span class="p">)</span>
 </code></pre></div>
-<p><strong>Parameter details:</strong>
-- <code>cache_dir</code>: Persistent storage for MRT files. Reused across runs.
-- <code>ram_fetch</code>: When caching is disabled, use shared memory instead of disk temp space. Improves performance at higher RAM cost.
-- <code>max_concurrent_downloads</code>: Balance between download speed and resource consumption.
-- <code>chunk_time</code>: Interval for fetch/parse cycles. Smaller intervals reduce memory usage at the cost of throughput.</p>
+<p><strong>Parameter details:</strong></p>
+<ul>
+<li><code>cache_dir</code>: Persistent storage for MRT files. Reused across runs. Setting this disables remote parsing.</li>
+<li><code>ram_fetch</code>: When caching is disabled, use shared memory instead of disk temp space. Improves performance at higher RAM cost.</li>
+<li><code>max_concurrent_downloads</code>: Balance between download speed and resource consumption.</li>
+</ul>
+<h3 id="remote-parsing">Remote Parsing<a class="headerlink" href="#remote-parsing" title="Permanent link">&para;</a></h3>
+<p>When using the <code>pybgpstream</code> parser, PyBGPFlux can parse MRT archives directly from their remote URLs without saving them to disk. This is the default behaviour and requires no extra configuration:</p>
+<div class="highlight"><pre><span></span><code><span class="n">config</span> <span class="o">=</span> <span class="n">BGPStreamConfig</span><span class="p">(</span>
+    <span class="o">...</span><span class="p">,</span>
+    <span class="n">parser</span><span class="o">=</span><span class="s2">&quot;pybgpstream&quot;</span><span class="p">,</span>
+    <span class="n">remote_parse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>   <span class="c1"># default — skip local download entirely</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Remote parsing is automatically disabled when <code>cache_dir</code> is set. To force local downloading even without a cache directory, set <code>remote_parse=False</code>.</p>
 <h2 id="direct-bgpstream-constructor">Direct BGPStream Constructor<a class="headerlink" href="#direct-bgpstream-constructor" title="Permanent link">&para;</a></h2>
 <p>It's possible to bypass Pydantic config validation by instantiating <code>BGPStream</code> directly:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pybgpflux</span><span class="w"> </span><span class="kn">import</span> <span class="n">BGPStream</span>

@@ -896,10 +896,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.chunk_time" class="md-nav__link">
+  <a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.parser" class="md-nav__link">
     <span class="md-ellipsis">
       
-        chunk_time
+        parser
       
     </span>
   </a>
@@ -907,10 +907,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.parser" class="md-nav__link">
+  <a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.remote_parse" class="md-nav__link">
     <span class="md-ellipsis">
       
-        parser
+        remote_parse
       
     </span>
   </a>
@@ -1396,10 +1396,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.chunk_time" class="md-nav__link">
+  <a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.parser" class="md-nav__link">
     <span class="md-ellipsis">
       
-        chunk_time
+        parser
       
     </span>
   </a>
@@ -1407,10 +1407,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.parser" class="md-nav__link">
+  <a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.remote_parse" class="md-nav__link">
     <span class="md-ellipsis">
       
-        parser
+        remote_parse
       
     </span>
   </a>
@@ -1975,20 +1975,6 @@
 <span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;If caching is disabled, fetch temp files in shared RAM memory (/dev/shm) or normal disc temp dir (/tmp).Default (False) to reduce RAM usage.&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Ram Fetch&quot;</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;chunk_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;anyOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;duration&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;null&quot;</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PT2H&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Interval for the fetch/parse cycles (benefits: avoid long prefetch time + periodic temps cleanup when caching is disabled).Lower value means less RAM/disk used at the cost of performance.&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Chunk Time&quot;</span>
-<span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="nt">&quot;parser&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pybgpkit&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;MRT files parser. Default `pybgpkit` is installed but slow, the others are system dependencies.&quot;</span><span class="p">,</span>
@@ -2000,6 +1986,19 @@
 <span class="w">      </span><span class="p">],</span>
 <span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Parser&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;remote_parse&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;anyOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;null&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Parse directly from a remote source without saving archives locally or in RAM. Currently supported only by the pybgpstream parser.&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Remote Parse&quot;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
@@ -2084,20 +2083,20 @@
                 (<code><span title="bool">bool</span> | None</code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="chunk_time = datetime.timedelta(hours=2)
-
-  
-      pydantic-field
-   (pybgpflux.bgpstreamconfig.BGPStreamConfig.chunk_time)" href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.chunk_time">chunk_time</a></code>
-                (<code><span title="datetime.timedelta">timedelta</span> | None</code>)
-            </li>
-            <li>
               <code><a class="autorefs autorefs-internal" title="parser = 'pybgpkit'
 
   
       pydantic-field
    (pybgpflux.bgpstreamconfig.BGPStreamConfig.parser)" href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.parser">parser</a></code>
                 (<code><span title="typing.Literal">Literal</span>[&#39;pybgpkit&#39;, &#39;bgpkit&#39;, &#39;pybgpstream&#39;, &#39;bgpdump&#39;]</code>)
+            </li>
+            <li>
+              <code><a class="autorefs autorefs-internal" title="remote_parse = True
+
+  
+      pydantic-field
+   (pybgpflux.bgpstreamconfig.BGPStreamConfig.remote_parse)" href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.remote_parse">remote_parse</a></code>
+                (<code><span title="bool">bool</span> | None</code>)
             </li>
         </ul>
 
@@ -2238,7 +2237,13 @@
 <span class="normal">155</span>
 <span class="normal">156</span>
 <span class="normal">157</span>
-<span class="normal">158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BGPStreamConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BGPStreamConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Unified BGPStream config&quot;&quot;&quot;</span>
 
     <span class="c1"># --- Query parameters (required) ---</span>
@@ -2270,17 +2275,17 @@
             <span class="s2">&quot;Default (False) to reduce RAM usage.&quot;</span>
         <span class="p">),</span>
     <span class="p">)</span>
-    <span class="n">chunk_time</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
-        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
-            <span class="s2">&quot;Interval for the fetch/parse cycles (benefits: avoid long prefetch time + periodic temps cleanup when caching is disabled).&quot;</span>
-            <span class="s2">&quot;Lower value means less RAM/disk used at the cost of performance.&quot;</span>
-        <span class="p">),</span>
-    <span class="p">)</span>
     <span class="n">parser</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;pybgpkit&quot;</span><span class="p">,</span> <span class="s2">&quot;bgpkit&quot;</span><span class="p">,</span> <span class="s2">&quot;pybgpstream&quot;</span><span class="p">,</span> <span class="s2">&quot;bgpdump&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="s2">&quot;pybgpkit&quot;</span><span class="p">,</span>
         <span class="n">description</span><span class="o">=</span><span class="p">(</span>
             <span class="s2">&quot;MRT files parser. Default `pybgpkit` is installed but slow, the others are system dependencies.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">remote_parse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Parse directly from a remote source without saving archives locally or in RAM. &quot;</span>
+            <span class="s2">&quot;Currently supported only by the pybgpstream parser.&quot;</span>
         <span class="p">),</span>
     <span class="p">)</span>
 
@@ -2336,12 +2341,18 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;Provide both start and end times, or leave both as None for live mode.&quot;</span>
             <span class="p">)</span>
+
+
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_live</span><span class="p">():</span>
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_time</span>
         <span class="c1"># Force data_type to update for live mode</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_types</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">data_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;updates&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Disable remote parsing when caching</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remote_parse</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">return</span> <span class="bp">self</span>
 
@@ -2539,28 +2550,6 @@
 
 
 
-<h3 id="pybgpflux.bgpstreamconfig.BGPStreamConfig.chunk_time" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">chunk_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></code>
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-pydantic-field"><code>pydantic-field</code></small>
-  </span>
-
-<a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.chunk_time" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Interval for the fetch/parse cycles (benefits: avoid long prefetch time + periodic temps cleanup when caching is disabled).Lower value means less RAM/disk used at the cost of performance.</p>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
-
-
-
 <h3 id="pybgpflux.bgpstreamconfig.BGPStreamConfig.parser" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">parser</span> <span class="o">=</span> <span class="s1">&#39;pybgpkit&#39;</span></code>
 
@@ -2574,6 +2563,28 @@
     <div class="doc doc-contents ">
 
         <p>MRT files parser. Default <code>pybgpkit</code> is installed but slow, the others are system dependencies.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pybgpflux.bgpstreamconfig.BGPStreamConfig.remote_parse" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">remote_parse</span> <span class="o">=</span> <span class="kc">True</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-pydantic-field"><code>pydantic-field</code></small>
+  </span>
+
+<a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.remote_parse" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Parse directly from a remote source without saving archives locally or in RAM. Currently supported only by the pybgpstream parser.</p>
 
     </div>
 
@@ -3524,17 +3535,17 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/pybgpflux/bgpstreamconfig.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">167</span>
 <span class="normal">168</span>
 <span class="normal">169</span>
 <span class="normal">170</span>
-<span class="normal">171</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LiveStreamConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LiveStreamConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Config for live mode&quot;&quot;&quot;</span>
 
     <span class="n">collectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>

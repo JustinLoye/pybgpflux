@@ -904,17 +904,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#concurrent-downloads" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Concurrent Downloads
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#ram-disk-usage" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -937,10 +926,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#chunk-time-settings" class="md-nav__link">
+  <a href="#remote-parsing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Chunk Time Settings
+        Remote Parsing
       
     </span>
   </a>
@@ -969,17 +958,6 @@
   
     <nav class="md-nav" aria-label="Troubleshooting Performance">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#slow-downloads" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Slow Downloads
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#high-memory-usage" class="md-nav__link">
@@ -1114,17 +1092,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#concurrent-downloads" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Concurrent Downloads
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#ram-disk-usage" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1147,10 +1114,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#chunk-time-settings" class="md-nav__link">
+  <a href="#remote-parsing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Chunk Time Settings
+        Remote Parsing
       
     </span>
   </a>
@@ -1179,17 +1146,6 @@
   
     <nav class="md-nav" aria-label="Troubleshooting Performance">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#slow-downloads" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Slow Downloads
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#high-memory-usage" class="md-nav__link">
@@ -1252,16 +1208,16 @@
 <h1 id="performance-guide">Performance Guide<a class="headerlink" href="#performance-guide" title="Permanent link">&para;</a></h1>
 <p>Tips and benchmarks for optimal PyBGPFlux performance.</p>
 <h2 id="performance-overview">Performance Overview<a class="headerlink" href="#performance-overview" title="Permanent link">&para;</a></h2>
-<p>PyBGPFlux achieves significant performance improvements over PyBGPStream for update processing:</p>
+<p>PyBGPFlux achieves performance on par with PyBGPStream:</p>
 <ul>
 <li><strong>Updates</strong>: 3–10× faster than PyBGPStream</li>
-<li><strong>RIBs</strong>: Currently 3–4× slower (optimization in progress)</li>
+<li><strong>RIBs</strong>: Currently 3–4× slower</li>
 <li><strong>Memory</strong>: Minimal due to lazy loading</li>
 </ul>
 <p>For detailed benchmark results, see <a href="https://github.com/JustinLoye/pybgpflux/blob/main/perf.md">perf.md</a> in the repository.</p>
 <h2 id="parser-selection">Parser Selection<a class="headerlink" href="#parser-selection" title="Permanent link">&para;</a></h2>
 <p>The biggest performance factor is parser choice:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Fastest: bgpkit-parser (10x speedup)</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># Fast: bgpkit-parser</span>
 <span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">parser_name</span><span class="o">=</span><span class="s2">&quot;bgpkit&quot;</span><span class="p">)</span>
 
 <span class="c1"># Slow but no dependencies: pybgpkit (baseline)</span>
@@ -1270,7 +1226,7 @@
 <span class="c1"># Fast: bgpdump</span>
 <span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">parser_name</span><span class="o">=</span><span class="s2">&quot;bgpdump&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Recommendation</strong>: Install <code>bgpkit-parser</code> for production use.</p>
+<p><strong>Recommendation</strong>: Install <code>bgpkit-parser</code>.</p>
 <h2 id="filtering-for-performance">Filtering for Performance<a class="headerlink" href="#filtering-for-performance" title="Permanent link">&para;</a></h2>
 <p>Applying filters reduces data processed and improves speed:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Original: processes all elements</span>
@@ -1290,17 +1246,6 @@
     <span class="n">filters</span><span class="o">=</span><span class="n">FilterOptions</span><span class="p">(</span><span class="n">origin_asn</span><span class="o">=</span><span class="mi">2497</span><span class="p">),</span>  <span class="c1"># Reduces dataset</span>
 <span class="p">)</span>
 </code></pre></div>
-<h2 id="concurrent-downloads">Concurrent Downloads<a class="headerlink" href="#concurrent-downloads" title="Permanent link">&para;</a></h2>
-<p>Control parallel downloads:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Default: 10 concurrent downloads</span>
-<span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">max_concurrent_downloads</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-
-<span class="c1"># For memory-constrained systems</span>
-<span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">max_concurrent_downloads</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-
-<span class="c1"># For high-throughput systems with plenty of memory</span>
-<span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">max_concurrent_downloads</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-</code></pre></div>
 <h2 id="ram-disk-usage">RAM Disk Usage<a class="headerlink" href="#ram-disk-usage" title="Permanent link">&para;</a></h2>
 <p>Use RAM disk (if available) for temporary file storage:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Automatic: uses /dev/shm (Linux) or /Volumes/RAMDisk (macOS)</span>
@@ -1309,7 +1254,7 @@
 <span class="c1"># Disable to use system temp directory</span>
 <span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">ram_fetch</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Performance benefit</strong>: 2–3× faster I/O on systems with sufficient free RAM.</p>
+<p><strong>Performance benefit</strong>: faster I/O and less disk write on systems with sufficient free RAM.</p>
 <h2 id="caching-strategy">Caching Strategy<a class="headerlink" href="#caching-strategy" title="Permanent link">&para;</a></h2>
 <p>Reuse cached files to avoid re-downloading:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Use persistent cache</span>
@@ -1324,18 +1269,12 @@
     <span class="n">cache_dir</span><span class="o">=</span><span class="s2">&quot;/data/bgp_cache&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
-<p><strong>Benefit</strong>: Subsequent runs skip downloads entirely.</p>
-<h2 id="chunk-time-settings">Chunk Time Settings<a class="headerlink" href="#chunk-time-settings" title="Permanent link">&para;</a></h2>
-<p>Set the archive prefetch/parse interval</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Default: 2 hours per chunk</span>
-<span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">chunk_time</span><span class="o">=</span><span class="mi">7200</span><span class="p">)</span>
-
-<span class="c1"># Smaller chunks: more requests but finer control</span>
-<span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">chunk_time</span><span class="o">=</span><span class="mi">1800</span><span class="p">)</span>  <span class="c1"># 30 minutes</span>
-
-<span class="c1"># Larger chunks: fewer requests, more data at once</span>
-<span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">chunk_time</span><span class="o">=</span><span class="mi">86400</span><span class="p">)</span>  <span class="c1"># 1 day</span>
+<h2 id="remote-parsing">Remote Parsing<a class="headerlink" href="#remote-parsing" title="Permanent link">&para;</a></h2>
+<p>When using the <code>pybgpstream</code> parser, enable remote parsing to skip writing to disk entirely (files are parsed directly from their remote URLs):</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># No local copy written at all (default when parser=&quot;pybgpstream&quot;)</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">parser_name</span><span class="o">=</span><span class="s2">&quot;pybgpstream&quot;</span><span class="p">,</span> <span class="n">remote_parse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
+<p>This is the lowest-latency option for one-off queries: it avoids both disk and RAM writes. However the throughput (BGP elems per second) is generally lower. Not available for other parsers.</p>
 <h2 id="memory-optimization">Memory Optimization<a class="headerlink" href="#memory-optimization" title="Permanent link">&para;</a></h2>
 <p>For very large datasets, minimize memory usage:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Process in streaming fashion, not storing all elements</span>
@@ -1352,23 +1291,16 @@
 </code></pre></div>
 <p><strong>Benefit</strong>: Constant memory regardless of dataset size.</p>
 <h2 id="troubleshooting-performance">Troubleshooting Performance<a class="headerlink" href="#troubleshooting-performance" title="Permanent link">&para;</a></h2>
-<h3 id="slow-downloads">Slow Downloads<a class="headerlink" href="#slow-downloads" title="Permanent link">&para;</a></h3>
-<ol>
-<li>Check network connectivity</li>
-<li>Reduce <code>max_concurrent_downloads</code> if bandwidth is limited</li>
-<li>Use <code>cache_dir</code> to avoid re-downloading</li>
-<li>Consider using smaller time windows</li>
-</ol>
 <h3 id="high-memory-usage">High Memory Usage<a class="headerlink" href="#high-memory-usage" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Reduce <code>max_concurrent_downloads</code> to 5 or less</li>
 <li>Set <code>ram_fetch=False</code> to use disk instead of RAM</li>
 <li>Process elements in streaming fashion, don't accumulate</li>
 </ol>
 <h3 id="slow-parsing">Slow Parsing<a class="headerlink" href="#slow-parsing" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Switch the parser from the default<code>pybgpkit</code></li>
+<li>Switch the parser from the default <code>pybgpkit</code></li>
 <li>Use more specific filters to reduce parsing load</li>
+<li>Don't use remote parsing</li>
 </ol>
 <h2 id="further-reading">Further Reading<a class="headerlink" href="#further-reading" title="Permanent link">&para;</a></h2>
 <ul>
