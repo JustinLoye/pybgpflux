@@ -2,9 +2,12 @@ import binascii
 import datetime
 import os
 import re
+import types
 
 
-def dt_from_filepath(filepath: str, pattern=r"(\d{8}\.\d{4})") -> datetime.datetime:
+def dt_from_filepath(
+    filepath: str, pattern: str = r"(\d{8}\.\d{4})"
+) -> datetime.datetime:
     match = re.search(pattern, filepath)
     if not match:
         raise RuntimeError("Could not determine time from filepath")
@@ -35,7 +38,12 @@ class Directory:
     def __enter__(self):
         return self.name
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: types.TracebackType | None,
+    ):
         """No-op on exit."""
         pass
 

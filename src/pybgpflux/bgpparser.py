@@ -1,7 +1,7 @@
-import bgpkit
+import bgpkit  # pyright: ignore[reportMissingTypeStubs]
 from pybgpflux.bgpstreamconfig import FilterOptions
 from pybgpflux.bgpelement import BGPElement
-from typing import Iterator, Protocol
+from typing import Any, Iterator, Protocol
 import re
 import ipaddress
 import subprocess as sp
@@ -9,7 +9,7 @@ from pybgpflux.utils import dt_from_filepath
 import logging
 
 try:
-    import pybgpstream
+    import pybgpstream  # pyright: ignore[reportMissingTypeStubs]
 except ImportError:
     pass
 
@@ -21,15 +21,23 @@ class BGPParser(Protocol):
     filters: FilterOptions
     supports_remote_parsing: bool
 
+    def __init__(
+        self,
+        filepath: str,
+        is_rib: bool,
+        collector: str,
+        filters: FilterOptions,
+    ) -> None: ...
+
     def __iter__(self) -> Iterator[BGPElement]: ...
 
 
 class PyBGPKITParser(BGPParser):
     """Use BGPKIT Python bindings (default parser). Slower than other alternatives but easier to ship (no system dependencies)."""
-    
+
     # In theory bgpkit supports remote parsing, but in practice I get unreliable results
     # due to connection drop when the kmerge is slow (big RIBs)
-    supports_remote_parsing=False
+    supports_remote_parsing = False
 
     def __init__(
         self,
@@ -42,23 +50,27 @@ class PyBGPKITParser(BGPParser):
         self.parser = None  # placeholder for lazy instantiation
         self.is_rib = is_rib
         self.collector = collector
-        self.filters: dict = filters.model_dump(exclude_unset=True, exclude_none=True)
-        # cast int ipv to pybgpkit ipv4 or ipv6 string
-        if "ip_version" in self.filters:
-            ipv_int = self.filters["ip_version"]
-            if ipv_int:
-                self.filters["ip_version"] = f"ipv{ipv_int}"
-        if self.filters.get("peer_asn"):
-            self.filters["peer_asn"] = str(self.filters["peer_asn"])
-        if self.filters.get("origin_asn"):
-            self.filters["origin_asn"] = str(self.filters["origin_asn"])
-        if self.filters.get("update_type"):
-            val = self.filters.pop("update_type")
-            self.filters["type"] = val
-        if self.filters.get("peer_ips"):
-            self.filters["peer_ips"] = ", ".join(self.filters["peer_ips"])
+        self.filters = filters
 
-    def _convert(self, element) -> BGPElement:
+        self.bgpkit_filters: dict[str, Any] = filters.model_dump(
+            exclude_unset=True, exclude_none=True
+        )
+        # cast int ipv to pybgpkit ipv4 or ipv6 string
+        if "ip_version" in self.bgpkit_filters:
+            ipv_int = self.bgpkit_filters["ip_version"]
+            if ipv_int:
+                self.bgpkit_filters["ip_version"] = f"ipv{ipv_int}"
+        if self.bgpkit_filters.get("peer_asn"):
+            self.bgpkit_filters["peer_asn"] = str(self.bgpkit_filters["peer_asn"])
+        if self.bgpkit_filters.get("origin_asn"):
+            self.bgpkit_filters["origin_asn"] = str(self.bgpkit_filters["origin_asn"])
+        if self.bgpkit_filters.get("update_type"):
+            val = self.bgpkit_filters.pop("update_type")
+            self.bgpkit_filters["type"] = val
+        if self.bgpkit_filters.get("peer_ips"):
+            self.bgpkit_filters["peer_ips"] = ", ".join(self.bgpkit_filters["peer_ips"])
+
+    def _convert(self, element: Any) -> BGPElement:
         return BGPElement(
             type="R" if self.is_rib else element.elem_type,
             collector=self.collector,
@@ -74,94 +86,17 @@ class PyBGPKITParser(BGPParser):
         )
 
     def __iter__(self) -> Iterator[BGPElement]:
-        parser = bgpkit.Parser(self.filepath, filters=self.filters)
-        for elem in parser:
+        parser = bgpkit.Parser(self.filepath, filters=self.bgpkit_filters)  # type: ignore
+        for elem in parser:  # type: ignore
             yield self._convert(elem)
 
 
 class BGPKITParser(BGPParser):
     """Run BGPKIT's CLI `bgpkit-parser` as a subprocess."""
-    
+
     # In theory bgpkit supports remote parsing, but in practice I get unreliable results
     # due to connection drop when the kmerge is slow (big RIBs)
-    supports_remote_parsing=False
-
-    def __init__(
-        self,
-        filepath: str,
-        is_rib: bool,
-        collector: str,
-        filters: FilterOptions | str | None = None,
-    ):
-        self.filepath = filepath
-        self.parser = None  # placeholder for lazy instantiation
-        self.is_rib = is_rib
-        self.collector = collector
-        self.filters = filters
-
-        # Set timestamp for the same behavior as bgpdump default (timestamp match rib time, not last change)
-        self.time = int(dt_from_filepath(self.filepath).timestamp())
-
-    def __iter__(self):
-        cmd = build_bgpkit_cmd(self.filepath, self.filters)
-        self.parser = sp.Popen(cmd, stdout=sp.PIPE, text=True, bufsize=1)
-
-        stream = (self._convert(line) for line in self.parser.stdout)
-
-        try:
-            yield from stream
-        finally:
-            # Cleanup happens whether exhausted or abandoned
-            self.parser.stdout.close()
-            self.parser.terminate()
-            self.parser.wait()  # Reap the zombie process
-
-    def _convert(self, element: str):
-        element = element.rstrip().split("|")
-        rec_type = element[0]
-
-        # 1. Handle Withdrawals (W)
-        # Structure: Type|Time|PeerIP|PeerAS|Prefix
-        if rec_type == "W":
-            return BGPElement(
-                time=self.time,  # force RIB filename timestamp instead of last changed
-                type="W",
-                collector=self.collector,
-                peer_asn=int(element[3]),
-                peer_address=element[2],
-                fields={"prefix": element[4]},
-            )
-
-        # 2. Handle Announcements (A)
-        # Structure: Type|Time|PeerIP|PeerAS|Prefix|ASPath|Origin|NextHop|...|Communities|...
-        # bgpkit-parser index mapping:
-        # 0: Type, 1: Time, 2: PeerIP, 3: PeerAS, 4: Prefix,
-        # 5: ASPath, 7: NextHop, 10: Communities
-
-        rec_comm = element[10]
-
-        return BGPElement(
-            # bgpkit outputs 'A' for both Updates and RIB entries.
-            self.time,
-            "R" if self.is_rib else rec_type,
-            self.collector,
-            # float(element[1]),
-            int(element[3]),
-            element[2],
-            {
-                "prefix": element[4],
-                "as-path": element[5],
-                "next-hop": element[7],
-                # Fast check for empty communities
-                "communities": rec_comm.split() if rec_comm else [],
-            },
-        )
-
-
-class PyBGPStreamParser(BGPParser):
-    """Use pybgpstream as a MRT parser with the `singlefile` data interface"""
-    
-    supports_remote_parsing=True
+    supports_remote_parsing = False
 
     def __init__(
         self,
@@ -169,42 +104,147 @@ class PyBGPStreamParser(BGPParser):
         is_rib: bool,
         collector: str,
         filters: FilterOptions,
-        *args,
-        **kwargs,
+    ):
+        self.filepath = filepath
+        self.parser: sp.Popen[str] | None = None  # placeholder for lazy instantiation
+        self.is_rib = is_rib
+        self.collector = collector
+        self.filters = filters
+
+        # Set timestamp for the same behavior as bgpdump default (timestamp match rib time, not last change)
+        self.time = int(dt_from_filepath(self.filepath).timestamp())
+
+    def _convert_rib(self, line: str) -> BGPElement:
+        element = line.rstrip().split("|")
+        rec_type = element[0]
+
+        if rec_type == "W":
+            return BGPElement(
+                time=self.time,
+                type="W",
+                collector=self.collector,
+                peer_asn=int(element[3]),
+                peer_address=element[2],
+                fields={"prefix": element[4]},
+            )
+
+        rec_comm = element[10]
+        return BGPElement(
+            self.time,
+            "R",
+            self.collector,
+            int(element[3]),
+            element[2],
+            {
+                "prefix": element[4],
+                "as-path": element[5],
+                "next-hop": element[7],
+                "communities": rec_comm.split() if rec_comm else [],
+            },
+        )
+
+    def _convert_upd(self, line: str) -> BGPElement:
+        element = line.rstrip().split("|")
+        rec_type = element[0]
+
+        if rec_type == "W":
+            return BGPElement(
+                time=float(element[1]),
+                type="W",
+                collector=self.collector,
+                peer_asn=int(element[3]),
+                peer_address=element[2],
+                fields={"prefix": element[4]},
+            )
+
+        rec_comm = element[10]
+        return BGPElement(
+            float(element[1]),
+            "A",
+            self.collector,
+            int(element[3]),
+            element[2],
+            {
+                "prefix": element[4],
+                "as-path": element[5],
+                "next-hop": element[7],
+                "communities": rec_comm.split() if rec_comm else [],
+            },
+        )
+
+    def __iter__(self) -> Iterator[BGPElement]:
+        convert = self._convert_rib if self.is_rib else self._convert_upd
+        cmd = build_bgpkit_cmd(self.filepath, self.filters)
+        self.parser = sp.Popen(cmd, stdout=sp.PIPE, text=True, bufsize=1)
+        assert self.parser.stdout is not None
+
+        stream = (convert(line) for line in self.parser.stdout)
+
+        try:
+            yield from stream
+        finally:
+            self.parser.stdout.close()
+            self.parser.terminate()
+            self.parser.wait()
+
+
+class PyBGPStreamParser(BGPParser):
+    """
+    Use pybgpstream as a MRT parser with the `singlefile` data interface
+
+    Yields pybgpstream.BGPElem instead instead of pybgpflux.BGPElement for better performance (save casting, and the two are almost idential anyway))
+    """
+
+    supports_remote_parsing = True
+
+    def __init__(
+        self,
+        filepath: str,
+        is_rib: bool,
+        collector: str,
+        filters: FilterOptions,
     ):
         self.filepath = filepath
         self.collector = collector
         self.filters = filters
+        self.is_rib = is_rib
 
     def _iter_normal(self):
         """when there is no filter or filters are supported by pybgpstream"""
-        stream = pybgpstream.BGPStream(
+        stream = pybgpstream.BGPStream(  # type: ignore
             data_interface="singlefile",
             filter=generate_bgpstream_filters(self.filters) if self.filters else None,
         )
-        stream.set_data_interface_option("singlefile", "rib-file", self.filepath)
+        stream.set_data_interface_option(
+            "singlefile", "rib-file" if self.is_rib else "upd-file", self.filepath
+        )
 
         for elem in stream:
-            elem.collector = self.collector
+            elem.collector = self.collector  # type: ignore
             yield elem
 
     def _iter_python_filter(self):
         """when filters are not supported by pybgpstream, filter from the python side"""
         bgpstream_filter = generate_bgpstream_filters(self.filters)
-        stream = pybgpstream.BGPStream(
+        stream = pybgpstream.BGPStream(  # type: ignore
             data_interface="singlefile",
             filter=bgpstream_filter if bgpstream_filter else None,
         )
-        stream.set_data_interface_option("singlefile", "rib-file", self.filepath)
+        stream.set_data_interface_option(
+            "singlefile", "rib-file" if self.is_rib else "upd-file", self.filepath
+        )
+        assert (
+            self.filters.peer_ips is not None
+        )  # guaranteed by __iter__ but make typing happy
         peer_ips = set(self.filters.peer_ips)
 
         for elem in stream:
             if elem.peer_address not in peer_ips:
                 continue
-            elem.collector = self.collector
+            elem.collector = self.collector  # type: ignore
             yield elem
 
-    def __iter__(self):
+    def __iter__(self):  # type: ignore
         if not self.filters.peer_ip and not self.filters.peer_ips:
             return self._iter_normal()
         else:
@@ -215,20 +255,27 @@ class PyBGPStreamParser(BGPParser):
 
 class BGPdumpParser(BGPParser):
     """Run bgpdump as a subprocess."""
-    
+
     supports_remote_parsing = False
 
-    def __init__(self, filepath, is_rib, collector, filters):
+    def __init__(self,
+                 filepath: str,
+                 is_rib: bool,
+                 collector: str, 
+                 filters: FilterOptions):
         self.filepath = filepath
+        self.is_rib = is_rib
         self.collector = collector
+        self.filters = filters
 
         self._init_filters(filters)
+        self.parser: sp.Popen[str] | None = None  # placeholder for lazy instantiation
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[BGPElement]:
         self.parser = sp.Popen(
             ["bgpdump", "-m", "-v", self.filepath], stdout=sp.PIPE, text=True, bufsize=1
         )
-
+        assert self.parser.stdout is not None
         try:
             raw_stream = (self._convert(line) for line in self.parser.stdout)
             # Filter STATE message
@@ -244,9 +291,9 @@ class BGPdumpParser(BGPParser):
             self.parser.terminate()
             self.parser.wait()  # Reap the zombie process
 
-    def _convert(self, element: str):
+    def _convert(self, line: str) -> BGPElement | None:
         # Extract type once to avoid repeated list lookups
-        element = element.rstrip().split("|")
+        element = line.rstrip().split("|")
         elem_type = element[2]
         if elem_type == "STATE":
             return
@@ -288,6 +335,7 @@ class BGPdumpParser(BGPParser):
         # self.peer_asns = set([f.peer_asn]) if f.peer_asn else (set(f.peer_ips) if f.peer_ips else None)
         if not f.model_dump(exclude_unset=True):
             self._filter_func = None
+            return
 
         self.peer_asn = f.peer_asn
 
@@ -383,7 +431,7 @@ def generate_bgpstream_filters(f: FilterOptions) -> str | None:
     if not f.model_dump(exclude_unset=True):
         return None
 
-    parts = []
+    parts: list[str] = []
 
     if f.peer_asn:
         parts.append(f"peer {f.peer_asn}")
