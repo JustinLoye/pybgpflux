@@ -1,6 +1,7 @@
 import asyncio
 import os
 import re
+import glob
 import time
 import logging
 from typing import Iterator
@@ -8,7 +9,7 @@ from typing import Iterator
 import aiofiles
 import httpx
 
-from pybgpflux.bgpparser import BGPParser
+from pybgpflux.parsers.bgpparser import BGPParser
 from pybgpflux.bgpstreamconfig import FilterOptions
 from pybgpflux.bgpelement import BGPElement
 from pybgpflux.utils import crc32
@@ -22,7 +23,7 @@ LOCK_TIMEOUT = 1800  # seconds – fallback if PID check fails
 LOCK_POLL_INTERVAL = 1.0  # seconds
 
 
-RCUrlsWithQueues = dict[str, dict[str, tuple[list, asyncio.Queue]]]
+RCUrlsWithQueues = dict[str, dict[str, tuple[list[str], asyncio.Queue[str | None]]]]
 """Data type -> route collector -> (urls, prefetch queue)"""
 
 
@@ -96,6 +97,33 @@ async def _wait_for_peer(filepath: str, timeout: float = LOCK_TIMEOUT) -> bool:
     return False
 
 
+def _sweep_stale(cache_dir: str) -> None:
+    """Remove lock/temp files left behind by a previously crashed process.
+
+    A lock is stale if its recorded PID is no longer running. A temp file is
+    stale if the PID embedded in its name (``<file>.<pid>.tmp``) is dead.
+    """
+    for lock_path in glob.glob(os.path.join(cache_dir, "*.lock")):
+        try:
+            with open(lock_path) as f:
+                pid = int(f.read().strip())
+        except (ValueError, OSError):
+            pid = None
+        if pid is None or not _pid_alive(pid):
+            try:
+                os.remove(lock_path)
+            except FileNotFoundError:
+                pass
+
+    for tmp_path in glob.glob(os.path.join(cache_dir, "*.tmp")):
+        match = re.search(r"\.(\d+)\.tmp$", tmp_path)
+        if match and not _pid_alive(int(match.group(1))):
+            try:
+                os.remove(tmp_path)
+            except FileNotFoundError:
+                pass
+
+
 def generate_cache_filename(url: str) -> str:
     """Generate a cache filename compatible with BGPKIT parser."""
 
@@ -145,28 +173,31 @@ async def download_file(
                     return filepath
 
                 temp_filepath = f"{filepath}.{os.getpid()}.tmp"
-                async with semaphore:
-                    for attempt in range(MAX_RETRIES + 1):
-                        try:
-                            await asyncio.sleep(REQUEST_DELAY)
-                            async with client.stream("GET", url) as resp:
-                                resp.raise_for_status()
-                                async with aiofiles.open(
-                                    temp_filepath, mode="wb"
-                                ) as fd:
-                                    async for chunk in resp.aiter_bytes(
-                                        chunk_size=32768
-                                    ):
-                                        await fd.write(chunk)
-                            os.rename(temp_filepath, filepath)
-                            return filepath
-                        except (httpx.HTTPError, asyncio.TimeoutError) as e:
-                            if attempt < MAX_RETRIES:
-                                await asyncio.sleep(INITIAL_BACKOFF * (2**attempt))
-                            else:
-                                if os.path.exists(temp_filepath):
-                                    os.remove(temp_filepath)
-                                raise RuntimeError(f"Cannot download {url}") from e
+                try:
+                    async with semaphore:
+                        for attempt in range(MAX_RETRIES + 1):
+                            try:
+                                await asyncio.sleep(REQUEST_DELAY)
+                                async with client.stream("GET", url) as resp:
+                                    resp.raise_for_status()
+                                    async with aiofiles.open(
+                                        temp_filepath, mode="wb"
+                                    ) as fd:
+                                        async for chunk in resp.aiter_bytes(
+                                            chunk_size=32768
+                                        ):
+                                            await fd.write(chunk)
+                                os.rename(temp_filepath, filepath)
+                                return filepath
+                            except (httpx.HTTPError, asyncio.TimeoutError) as e:
+                                if attempt < MAX_RETRIES:
+                                    await asyncio.sleep(INITIAL_BACKOFF * (2**attempt))
+                                else:
+                                    raise RuntimeError(f"Cannot download {url}") from e
+                finally:
+                    # Remove any partial temp file on error or cancellation.
+                    if os.path.exists(temp_filepath):
+                        os.remove(temp_filepath)
             finally:
                 _release_lock(filepath)
         else:
@@ -180,9 +211,12 @@ async def download_all(urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: i
     """Single async entry point: one client, one global semaphore, one task per data_type,collector."""
     dl_semaphore = asyncio.Semaphore(max_concurrent)
 
+    if not is_remote_parsing:
+        _sweep_stale(cache_dir)
+
     async with httpx.AsyncClient(timeout=httpx.Timeout(None, read=300.0)) as client:
 
-        async def worker(collector: str, url_list: list[str], async_q: asyncio.Queue):
+        async def worker(collector: str, url_list: list[str], async_q: asyncio.Queue[str | None]):
             # For remote parsing, don't need to prefetch. So simply queue url.
             if is_remote_parsing:
                 for url in url_list:
@@ -213,14 +247,34 @@ async def download_all(urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: i
 async def safe_download_all(
     urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: int, is_remote_parsing: bool
 ):
-    """Run download_all and guarantee sentinels are pushed on crash."""
+    """Run download_all and guarantee sentinels are pushed on a genuine crash.
+
+    Note: ``CancelledError`` is intentionally *not* caught. During teardown the
+    consumer cancels this task, and trying to push sentinels onto a loop that is
+    shutting down would fail noisily.
+    """
     try:
         await download_all(urls, cache_dir, max_concurrent, is_remote_parsing)
-    except BaseException as e:
+    except Exception as e:
         logging.error(f"Download orchestrator crashed: {e}")
         for data_type in urls:
             for _, (_, async_q) in urls[data_type].items():
                 await async_q.put(None)
+
+
+async def cancel_all_tasks() -> None:
+    """Cancel every other task on this loop and wait for them to unwind.
+
+    Called during teardown so that download workers blocked on a full prefetch
+    queue (backpressure) are released cleanly instead of being abandoned.
+    """
+    current = asyncio.current_task()
+    pending = [t for t in asyncio.all_tasks() if t is not current]
+    for task in pending:
+        task.cancel()
+    if pending:
+        await asyncio.gather(*pending, return_exceptions=True)
+
 
 
 class RCStream:
@@ -228,13 +282,13 @@ class RCStream:
 
     def __init__(
         self,
-        parser_cls: BGPParser,
+        parser_cls: type[BGPParser],
         data_type: str,
         collector: str,
         filters: FilterOptions,
         is_caching: bool,
         is_remote_parsing: bool,
-        async_q: asyncio.Queue,
+        async_q: asyncio.Queue[str | None],
         loop: asyncio.AbstractEventLoop,
     ):
         self.parser_cls = parser_cls
@@ -247,7 +301,7 @@ class RCStream:
         self._loop = loop
 
     def __iter__(self) -> Iterator[BGPElement]:
-        is_rib = self.data_type == "rib"
+        is_rib = self.data_type == "ribs"
         while True:
             # Query the background thread for prefetched files
             filepath = asyncio.run_coroutine_threadsafe(

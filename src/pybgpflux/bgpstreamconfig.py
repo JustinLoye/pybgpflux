@@ -1,5 +1,5 @@
 import datetime
-import importlib
+from importlib.util import find_spec
 import shutil
 from pydantic import BaseModel, Field, DirectoryPath, field_validator, model_validator
 from typing import Literal
@@ -58,7 +58,7 @@ class BGPStreamConfig(BaseModel):
         default=None, description="End of the stream"
     )
     collectors: list[str] = Field(description="List of collectors to get data from")
-    data_types: list[Literal["ribs", "updates"]] | None = Field(
+    data_types: list[Literal["ribs", "updates"]] = Field(
         default=["updates"],
         description="List of archives files to consider (`ribs` or `updates`)",
     )
@@ -96,8 +96,6 @@ class BGPStreamConfig(BaseModel):
     @field_validator("start_time", "end_time", mode="before")
     @classmethod
     def normalize_to_utc(cls, dt: datetime.datetime) -> datetime.datetime:
-        if dt is None:
-            return None
         # if naive datetime (not timezone-aware) assume it's UTC
         if dt.tzinfo is None:
             return dt.replace(tzinfo=datetime.timezone.utc)
@@ -109,13 +107,13 @@ class BGPStreamConfig(BaseModel):
     @classmethod
     def check_parser_available(cls, parser: str) -> str:
         if parser == "pybgpkit":
-            if importlib.util.find_spec("bgpkit") is None:
+            if find_spec("bgpkit") is None:
                 raise ValueError(
                     "pybgpkit is not installed. Install with: pip install pybgpkit"
                 )
 
         elif parser == "pybgpstream":
-            if importlib.util.find_spec("pybgpstream") is None:
+            if find_spec("pybgpstream") is None:
                 raise ValueError(
                     "pybgpstream is not installed. "
                     "Install with: pip install pybgpstream (ensure system dependencies are met)"
@@ -139,21 +137,18 @@ class BGPStreamConfig(BaseModel):
         return parser
 
     @model_validator(mode="after")
-    def validate(self) -> "BGPStreamConfig":
-        
+    def sanitize(self) -> "BGPStreamConfig":
         if (self.start_time is None) ^ (self.end_time is None):
             raise ValueError(
                 "Provide both start and end times, or leave both as None for live mode."
             )
-            
-        
+
         if not self.is_live():
-            assert self.start_time < self.end_time
+            assert self.start_time < self.end_time  # type: ignore[reportOperatorIssue]
         # Force data_type to update for live mode
         else:
-            if self.data_types is None:
-                self.data_types = ["updates"]
-                       
+            self.data_types = ["updates"]
+
         # Disable remote parsing when caching
         if self.cache_dir:
             self.remote_parse = False

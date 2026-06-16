@@ -7,8 +7,8 @@ from operator import attrgetter
 import logging
 from tempfile import TemporaryDirectory
 
-import bgpkit
-from bgpkit.bgpkit_broker import BrokerItem
+import bgpkit # pyright: ignore[reportMissingTypeStubs]
+from bgpkit.bgpkit_broker import BrokerItem # pyright: ignore[reportMissingTypeStubs]
 
 from pybgpflux.bgpstreamconfig import (
     BGPStreamConfig,
@@ -16,22 +16,24 @@ from pybgpflux.bgpstreamconfig import (
     LiveStreamConfig,
 )
 from pybgpflux.bgpelement import BGPElement
-from pybgpflux.bgpparser import (
+from pybgpflux.parsers.bgpdump import BGPdumpParser
+from pybgpflux.parsers.pybgpkit import PyBGPKITParser
+from pybgpflux.parsers.pybgpstream import PyBGPStreamParser
+from pybgpflux.parsers.bgpkit import BGPKITParser
+from pybgpflux.parsers.bgpparser import (
     BGPParser,
-    PyBGPKITParser,
-    BGPKITParser,
-    PyBGPStreamParser,
-    BGPdumpParser,
 )
 from pybgpflux.rislive import RISLiveStream, jitter_buffer_stream
 from pybgpflux.utils import Directory, get_shared_memory
 from pybgpflux.downloader import (
     PREFETCH_SIZE,
     RCStream,
+    cancel_all_tasks,
     safe_download_all,
+    RCUrlsWithQueues
 )
 
-name2parser = {
+name2parser: dict[str, type[BGPParser]] = {
     "pybgpkit": PyBGPKITParser,
     "bgpkit": BGPKITParser,
     "pybgpstream": PyBGPStreamParser,
@@ -52,7 +54,7 @@ class BGPStream:
 
     Attributes:
         collectors (list[str]): List of collector names to fetch data from.
-        data_type (list[Literal["update", "rib"]]): Data types to stream ("update" or "rib").
+        data_type (list[Literal["ribs", "updates"]]): Data types to stream ("ribs" or "updates").
         ts_start (float | None): Start timestamp (Unix epoch). None for live mode.
         ts_end (float | None): End timestamp (Unix epoch). None for live mode.
         filters (FilterOptions): Filtering options for BGP elements.
@@ -81,7 +83,7 @@ class BGPStream:
         ```python
         stream = BGPStream(
             collectors=["route-views.wide"],
-            data_type=["update"],
+            data_type=["updates"],
             ts_start=1283203200,
             ts_end=1283289600,
             filters=FilterOptions(origin_asn=64512),
@@ -107,9 +109,9 @@ class BGPStream:
     def __init__(
         self,
         collectors: list[str],
-        data_type: list[Literal["update", "rib"]],
-        ts_start: float = None,
-        ts_end: float = None,
+        data_type: list[Literal["ribs", "updates"]],
+        ts_start: float | None = None,
+        ts_end: float | None = None,
         filters: FilterOptions | None = None,
         cache_dir: str | None = None,
         max_concurrent_downloads: int | None = 10,
@@ -150,7 +152,10 @@ class BGPStream:
         self.filters = filters
 
         # Implementation config
-        self.max_concurrent_downloads = max_concurrent_downloads
+        if max_concurrent_downloads:
+            self.max_concurrent_downloads = max_concurrent_downloads
+        else:
+            self.max_concurrent_downloads = 10
         self.ram_fetch = ram_fetch
         self.cache_dir = cache_dir
         if not parser_name:
@@ -165,26 +170,26 @@ class BGPStream:
             self.remote_parse = False
 
         self.broker = bgpkit.Broker()
-        self.parser_cls: BGPParser = name2parser[parser_name]
+        self.parser_cls: type[BGPParser] = name2parser[self.parser_name]
 
         # Live config
         self.jitter_buffer_delay = jitter_buffer_delay
 
     def _set_urls(self):
         """Set archive files URL with bgpkit broker and setup prefetch queues"""
-        self.urls = {
-            "rib": defaultdict(lambda: ([], asyncio.Queue(maxsize=PREFETCH_SIZE))),
-            "update": defaultdict(lambda: ([], asyncio.Queue(maxsize=PREFETCH_SIZE))),
+        self.urls: RCUrlsWithQueues = {
+            "ribs": defaultdict(lambda: ([], asyncio.Queue(maxsize=PREFETCH_SIZE))),
+            "updates": defaultdict(lambda: ([], asyncio.Queue(maxsize=PREFETCH_SIZE))),
         }
         for data_type in self.data_type:
-            items: list[BrokerItem] = self.broker.query(
-                ts_start=int(self.ts_start - 60),
-                ts_end=int(self.ts_end),
+            items: list[BrokerItem] = self.broker.query( # type: ignore
+                ts_start=str(int(self.ts_start - 60)), # type: ignore
+                ts_end=str(int(self.ts_end)),  # type: ignore
                 collector_id=",".join(self.collectors),
-                data_type=data_type,
+                data_type=data_type[:-1], # removes plural form
             )
-            for item in items:
-                self.urls[data_type][item.collector_id][0].append(item.url)
+            for item in items: # type: ignore
+                self.urls[data_type][item.collector_id][0].append(item.url) # type: ignore
 
     def __iter__(self):
         if self.ts_start is None and self.ts_end is None:
@@ -252,11 +257,20 @@ class BGPStream:
 
             try:
                 for bgpelem in merge(*streams, key=attrgetter("time")):
-                    if self.ts_start <= bgpelem.time <= self.ts_end:
+                    if self.ts_start <= bgpelem.time <= self.ts_end: # type: ignore
                         yield bgpelem
             finally:
+                # Cancel in-flight download tasks first so workers blocked on a
+                # full prefetch queue are released, then stop and close the loop.
+                try:
+                    asyncio.run_coroutine_threadsafe(
+                        cancel_all_tasks(), loop
+                    ).result(timeout=5.0)
+                except Exception as e:
+                    logger.debug(f"Task cancellation during teardown failed: {e}")
                 loop.call_soon_threadsafe(loop.stop)
                 bg_thread.join(timeout=5.0)
+                loop.close()
 
     def _iter_live(self) -> Iterator[BGPElement]:
         ris_collectors = [
@@ -301,37 +315,38 @@ class BGPStream:
                 print(elem)
             ```
         """
-        if isinstance(config, BGPStreamConfig):
-            if not config.is_live():
-                return cls(
-                    ts_start=config.start_time.timestamp(),
-                    ts_end=config.end_time.timestamp(),
-                    collectors=config.collectors,
-                    data_type=[dtype[:-1] for dtype in config.data_types],
-                    filters=config.filters if config.filters else FilterOptions(),
-                    cache_dir=str(config.cache_dir) if config.cache_dir else None,
-                    max_concurrent_downloads=config.max_concurrent_downloads
-                    if config.max_concurrent_downloads
-                    else 10,
-                    ram_fetch=config.ram_fetch if config.ram_fetch else None,
-                    parser_name=config.parser if config.parser else "pybgpkit",
-                    remote_parse=config.remote_parse if config.remote_parse else True
+        match config:
+            case BGPStreamConfig():
+                if not config.is_live():
+                    return cls(
+                        ts_start=config.start_time.timestamp(), # type: ignore
+                        ts_end=config.end_time.timestamp(), # type: ignore
+                        collectors=config.collectors,
+                        data_type=config.data_types,
+                        filters=config.filters if config.filters else FilterOptions(),
+                        cache_dir=str(config.cache_dir) if config.cache_dir else None,
+                        max_concurrent_downloads=config.max_concurrent_downloads
+                        if config.max_concurrent_downloads
+                        else 10,
+                        ram_fetch=config.ram_fetch if config.ram_fetch else None,
+                        parser_name=config.parser if config.parser else "pybgpkit",
+                        remote_parse=config.remote_parse if config.remote_parse else True
+                    )
+                else:
+                    return cls(
+                        collectors=config.collectors,
+                        data_type=["updates"],
+                        filters=config.filters if config.filters else FilterOptions(),
+                        jitter_buffer_delay=10,
                 )
-            else:
+            case LiveStreamConfig():
+                
                 return cls(
                     collectors=config.collectors,
-                    data_type=["update"],
+                    data_type=["updates"],
                     filters=config.filters if config.filters else FilterOptions(),
-                    jitter_buffer_delay=10,
+                    jitter_buffer_delay=config.jitter_buffer_delay,
                 )
 
-        elif isinstance(config, LiveStreamConfig):
-            return cls(
-                collectors=config.collectors,
-                data_type=["update"],
-                filters=config.filters if config.filters else FilterOptions(),
-                jitter_buffer_delay=config.jitter_buffer_delay,
-            )
-
-        else:
-            raise ValueError("Unsupported config type")
+            case _:
+                raise ValueError("Unsupported config type")

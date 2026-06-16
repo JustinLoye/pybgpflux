@@ -2,12 +2,13 @@ from typing import Iterator
 import json
 import heapq
 import websocket
+from typing import Any
 
 from pybgpflux.bgpelement import BGPElement
 from pybgpflux.bgpstreamconfig import FilterOptions
 
 
-def ris_message2bgpelem(ris_message: dict) -> Iterator[BGPElement]:
+def ris_message2bgpelem(ris_message: dict[str, Any]) -> Iterator[BGPElement]:
 
     timestamp = float(ris_message["timestamp"])
     collector = ris_message["host"].split(".")[0]
@@ -53,15 +54,15 @@ class RISLiveStream:
     def __init__(
         self,
         collectors: list[str],
-        client="pybgpflux",
-        filters: FilterOptions = None,
+        client: str="pybgpflux",
+        filters: FilterOptions | None = None,
     ):
         self.collectors = collectors
         self.client = client
         self.filters = self._convert_filter_options(filters)
 
     @staticmethod
-    def _convert_filter_options(f: FilterOptions) -> dict:
+    def _convert_filter_options(f: FilterOptions | None) -> dict[str, Any]:
         """Convert FilterOptions to RIS live filters"""
         if f is None:
             return {}
@@ -69,14 +70,14 @@ class RISLiveStream:
         if not f.model_dump(exclude_unset=True):
             return {}
 
-        res = {}
+        res: dict[str, Any] = {}
         if f.update_type == "withdraw":
             res["require"] = "withdrawals"
         elif f.update_type == "announce":
             res["require"] = "announcements"
         if f.peer_ip:
             res["peer"] = f.peer_ip
-        path_elements = []
+        path_elements: list[str] = []
         if f.peer_asn:
             path_elements.append(f"^{f.peer_asn}")
         if f.origin_asn:
@@ -102,7 +103,7 @@ class RISLiveStream:
 
     def __iter__(self) -> Iterator[BGPElement]:
         ws = websocket.WebSocket()
-        ws.connect(f"wss://ris-live.ripe.net/v1/ws/?client={self.client}")
+        ws.connect(f"wss://ris-live.ripe.net/v1/ws/?client={self.client}") # pyright: ignore[reportUnknownMemberType]
 
         # Subscribe to each collector on the same connection
         for collector in self.collectors:
@@ -115,11 +116,11 @@ class RISLiveStream:
             yield from ris_message2bgpelem(parsed)
 
 
-def jitter_buffer_stream(stream, buffer_delay=10) -> Iterator[BGPElement]:
+def jitter_buffer_stream(stream: RISLiveStream, buffer_delay: float=10.0) -> Iterator[BGPElement]:
     """
     Produces an ordered stream by buffering elements for `buffer_delay` seconds.
     """
-    heap = []
+    heap: list[BGPElement] = []
     max_ts_seen = float("-inf")
 
     for elem in stream:
