@@ -330,94 +330,145 @@ class BGPdumpParser(BGPParser):
             },
         )
 
-    def _init_filters(self, f: FilterOptions):
-        # 1. Pre-process sets for O(1) lookups and compile Regex
-        # self.peer_asns = set([f.peer_asn]) if f.peer_asn else (set(f.peer_ips) if f.peer_ips else None)
-        if not f.model_dump(exclude_unset=True):
-            self._filter_func = None
-            return
+    def _init_filters(self, f: FilterOptions) -> None:
+            if not f.model_dump(exclude_unset=True):
+                self._filter_func = None
+                return
 
-        self.peer_asn = f.peer_asn
+            self.filter_peer_asn: int | None = f.peer_asn
 
-        # Peer IPs (handles both single and list)
-        self.peer_ips = None
-        if f.peer_ip:
-            self.peer_ips = {str(f.peer_ip)}
-        elif f.peer_ips:
-            self.peer_ips = {str(ip) for ip in f.peer_ips}
+            self.filter_peer_ips: set[str] | None = None
+            if f.peer_ip:
+                self.filter_peer_ips = {str(f.peer_ip)}
+            elif f.peer_ips:
+                self.filter_peer_ips = {str(ip) for ip in f.peer_ips}
 
-        self.origin_asn = str(f.origin_asn) if f.origin_asn else None
-        self.update_type = (
-            f.update_type[0].upper() if f.update_type else None
-        )  # 'A' or 'W'
-        self.ip_version = f.ip_version
+            # Regex handles AS_SETs like "{1234,5678}" properly
+            self.filter_origin_asn_re: re.Pattern[str] | None = (
+                re.compile(rf"\b{f.origin_asn}\b") if f.origin_asn else None
+            )
 
-        # Regex and CIDR objects
-        self.as_path_re = re.compile(f.as_path) if f.as_path else None
-        self.exact_net = ipaddress.ip_network(f.prefix) if f.prefix else None
-        self.sub_net = ipaddress.ip_network(f.prefix_sub) if f.prefix_sub else None
-        self.super_net = (
-            ipaddress.ip_network(f.prefix_super) if f.prefix_super else None
-        )
-        self.ss_net = (
-            ipaddress.ip_network(f.prefix_super_sub) if f.prefix_super_sub else None
-        )
+            # Map human-readable update_type to wire-level codes
+            self.filter_update_types: frozenset[str] | None = None
+            if f.update_type == "announce":
+                self.filter_update_types = frozenset({"A", "R"})
+            elif f.update_type == "withdraw":
+                self.filter_update_types = frozenset({"W"})
 
-        # 2. Build the optimized filter function
-        self._filter_func = self._compile_filter()
+            self.filter_ip_version: int | None = f.ip_version
+            self.filter_as_path_re: re.Pattern[str] | None = (
+                re.compile(f.as_path) if f.as_path else None
+            )
+
+            # strict=False prevents ValueError on dirty BGP data
+            self.filter_exact_net: ipaddress.IPv4Network | ipaddress.IPv6Network | None = (
+                ipaddress.ip_network(f.prefix, strict=False) if f.prefix else None
+            )
+            self.filter_sub_net: ipaddress.IPv4Network | ipaddress.IPv6Network | None = (
+                ipaddress.ip_network(f.prefix_sub, strict=False) if f.prefix_sub else None
+            )
+            self.filter_super_net: ipaddress.IPv4Network | ipaddress.IPv6Network | None = (
+                ipaddress.ip_network(f.prefix_super, strict=False) if f.prefix_super else None
+            )
+            self.filter_ss_net: ipaddress.IPv4Network | ipaddress.IPv6Network | None = (
+                ipaddress.ip_network(f.prefix_super_sub, strict=False) if f.prefix_super_sub else None
+            )
+
+            self._filter_func = self._compile_filter()
 
     def _compile_filter(self):
-        # Localize variables to the closure to avoid 'self' lookups in the loop
-        p_asn = self.peer_asn
-        p_ips = self.peer_ips
-        o_asn = self.origin_asn
-        u_type = self.update_type
-        version = self.ip_version
-        path_re = self.as_path_re
+        # Localize variables to the closure to bypass 'self' lookups
+        filter_peer_asn = self.filter_peer_asn
+        filter_peer_ips = self.filter_peer_ips
+        filter_origin_asn_re = self.filter_origin_asn_re
+        filter_update_types = self.filter_update_types
+        filter_ip_version = self.filter_ip_version
+        filter_as_path_re = self.filter_as_path_re
 
-        e_net = self.exact_net
-        sub_n = self.sub_net
-        sup_n = self.super_net
-        ss_n = self.ss_net
+        filter_exact_net = self.filter_exact_net
+        filter_sub_net = self.filter_sub_net
+        filter_super_net = self.filter_super_net
+        filter_ss_net = self.filter_ss_net
+
+        # Cache boolean check outside the loop
+        any_prefix_filter = any([
+            filter_exact_net, 
+            filter_sub_net, 
+            filter_super_net, 
+            filter_ss_net
+        ])
+
+        # Cache whether we need to touch AS Path fields at all
+        needs_path_parsing = filter_as_path_re is not None or filter_origin_asn_re is not None
+        
+        # Cache whether we need to touch Prefix fields at all
+        needs_prefix_parsing = any_prefix_filter or filter_ip_version is not None
 
         def filter_logic(e: BGPElement) -> bool:
-            # 1. Cheap checks first (Integers and Strings)
-            if p_asn is not None and int(e.peer_asn) != p_asn:
+            # 1. Quickest checks first: Scalars and native attributes
+            if filter_peer_asn is not None and e.peer_asn != filter_peer_asn:
                 return False
-            if p_ips is not None and e.peer_address not in p_ips:
+            if filter_peer_ips is not None and e.peer_address not in filter_peer_ips:
                 return False
-            if u_type is not None and e.type != u_type:
+            if filter_update_types is not None and e.type not in filter_update_types:
                 return False
 
-            # 2. String processing (Origin ASN and AS Path)
-            # Use .get() or direct access depending on your confidence in 'fields' content
-            as_path = e.fields.get("as-path", "")
-            if o_asn is not None:
-                if not as_path or as_path.rsplit(" ", 1)[-1] != o_asn:
+            # 2. Dictionary/String checks: Only executed if path filters are active
+            if needs_path_parsing:
+                # Withdrawals mathematically cannot match AS path filters.
+                if e.type == "W":
                     return False
-            if path_re is not None and not path_re.search(as_path):
-                return False
-
-            # 3. CIDR / IP Logic (Expensive)
-            prefix_str = e.fields.get("prefix")
-            if version is not None:
-                # Fast check for IP version without parsing
-                is_v6 = ":" in prefix_str if prefix_str else False
-                if (version == 6 and not is_v6) or (version == 4 and is_v6):
+                    
+                as_path: str = e.fields.get("as-path", "")
+                
+                if filter_as_path_re is not None and not filter_as_path_re.search(as_path):
                     return False
 
-            if e_net or sub_n or sup_n or ss_n:
+                if filter_origin_asn_re is not None:
+                    if not as_path:
+                        return False
+                    last_segment = as_path.rsplit(" ", 1)[-1]
+                    if not filter_origin_asn_re.search(last_segment):
+                        return False
+
+            # 3. Heaviest checks (CIDR / IP Version): Only executed if prefix filters are active
+            if needs_prefix_parsing:
+                prefix_str: str | None = e.fields.get("prefix")
+                
                 if not prefix_str:
+                    return False # Active filter but no prefix data
+                
+                # Check version cheaply without instantiating ipaddress objects
+                is_ipv6 = ":" in prefix_str
+                elem_ip_version = 6 if is_ipv6 else 4
+                
+                if filter_ip_version is not None and filter_ip_version != elem_ip_version:
                     return False
-                net = ipaddress.ip_network(prefix_str)
-                if e_net and net != e_net:
-                    return False
-                if sub_n and not net.subnet_of(sub_n):
-                    return False
-                if sup_n and not net.supernet_of(sup_n):
-                    return False
-                if ss_n and not (net.subnet_of(ss_n) or net.supernet_of(ss_n)):
-                    return False
+
+                if any_prefix_filter:
+                    try:
+                        elem_net = ipaddress.ip_network(prefix_str, strict=False)
+                    except ValueError:
+                        return False
+
+                    # Prevent TypeError by asserting IP versions match before subnet calculations
+                    if filter_exact_net:
+                        if elem_ip_version != filter_exact_net.version or elem_net != filter_exact_net:
+                            return False
+                            
+                    if filter_sub_net:
+                        if elem_ip_version != filter_sub_net.version or not elem_net.subnet_of(filter_sub_net): # pyright: ignore[reportArgumentType]
+                            return False
+                            
+                    if filter_super_net:
+                        if elem_ip_version != filter_super_net.version or not elem_net.supernet_of(filter_super_net): # pyright: ignore[reportArgumentType]
+                            return False
+                            
+                    if filter_ss_net:
+                        if elem_ip_version != filter_ss_net.version:
+                            return False
+                        if not (elem_net.subnet_of(filter_ss_net) or elem_net.supernet_of(filter_ss_net)): # pyright: ignore[reportArgumentType]
+                            return False
 
             return True
 
@@ -464,7 +515,7 @@ def generate_bgpstream_filters(f: FilterOptions) -> str | None:
 
     # Warn about unsupported fields
     if f.peer_ip or f.peer_ips:
-        logging.info(
+        logging.debug(
             "Filtering by peer_ip is not supported natively by pybgpstream (falling back to python-side filtering)"
         )
 
