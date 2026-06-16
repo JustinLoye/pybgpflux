@@ -55,14 +55,14 @@ class RISLiveStream:
         self,
         collectors: list[str],
         client: str="pybgpflux",
-        filters: FilterOptions = None,
+        filters: FilterOptions | None = None,
     ):
         self.collectors = collectors
         self.client = client
         self.filters = self._convert_filter_options(filters)
 
     @staticmethod
-    def _convert_filter_options(f: FilterOptions) -> dict[str, Any]:
+    def _convert_filter_options(f: FilterOptions | None) -> dict[str, Any]:
         """Convert FilterOptions to RIS live filters"""
         if f is None:
             return {}
@@ -70,7 +70,7 @@ class RISLiveStream:
         if not f.model_dump(exclude_unset=True):
             return {}
 
-        res = {}
+        res: dict[str, Any] = {}
         if f.update_type == "withdraw":
             res["require"] = "withdrawals"
         elif f.update_type == "announce":
