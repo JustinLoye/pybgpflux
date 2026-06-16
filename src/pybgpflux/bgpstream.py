@@ -16,12 +16,12 @@ from pybgpflux.bgpstreamconfig import (
     LiveStreamConfig,
 )
 from pybgpflux.bgpelement import BGPElement
-from pybgpflux.bgpparser import (
+from pybgpflux.parsers.bgpdump import BGPdumpParser
+from pybgpflux.parsers.pybgpkit import PyBGPKITParser
+from pybgpflux.parsers.pybgpstream import PyBGPStreamParser
+from pybgpflux.parsers.bgpkit import BGPKITParser
+from pybgpflux.parsers.bgpparser import (
     BGPParser,
-    PyBGPKITParser,
-    BGPKITParser,
-    PyBGPStreamParser,
-    BGPdumpParser,
 )
 from pybgpflux.rislive import RISLiveStream, jitter_buffer_stream
 from pybgpflux.utils import Directory, get_shared_memory

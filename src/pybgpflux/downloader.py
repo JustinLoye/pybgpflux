@@ -9,7 +9,7 @@ from typing import Iterator
 import aiofiles
 import httpx
 
-from pybgpflux.bgpparser import BGPParser
+from pybgpflux.parsers.bgpparser import BGPParser
 from pybgpflux.bgpstreamconfig import FilterOptions
 from pybgpflux.bgpelement import BGPElement
 from pybgpflux.utils import crc32

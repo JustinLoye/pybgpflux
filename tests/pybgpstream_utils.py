@@ -1,6 +1,6 @@
 import pybgpstream
 from pybgpflux import BGPStreamConfig
-from pybgpflux.bgpparser import generate_bgpstream_filters
+from pybgpflux.parsers.pybgpstream import generate_bgpstream_filters
 
 
 def make_bgpstream(
