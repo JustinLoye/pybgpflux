@@ -92,6 +92,9 @@ class BGPStreamConfig(BaseModel):
             "Currently supported only by the pybgpstream parser."
         ),
     )
+    broker: Literal["bgpkit", "bgpstream", "bgpfinder"] | None = Field(
+        default="bgpkit", description="BGP archive data broker"
+    )
 
     @field_validator("start_time", "end_time", mode="before")
     @classmethod

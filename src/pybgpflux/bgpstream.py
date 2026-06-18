@@ -6,9 +6,7 @@ from heapq import merge
 from operator import attrgetter
 import logging
 from tempfile import TemporaryDirectory
-
-import bgpkit # pyright: ignore[reportMissingTypeStubs]
-from bgpkit.bgpkit_broker import BrokerItem # pyright: ignore[reportMissingTypeStubs]
+import datetime
 
 from pybgpflux.bgpstreamconfig import (
     BGPStreamConfig,
@@ -16,6 +14,8 @@ from pybgpflux.bgpstreamconfig import (
     LiveStreamConfig,
 )
 from pybgpflux.bgpelement import BGPElement
+from pybgpflux.brokers.bgpstream import BGPStreamBroker
+from pybgpflux.brokers.bgpkit import BGPKITBroker
 from pybgpflux.parsers.bgpdump import BGPdumpParser
 from pybgpflux.parsers.pybgpkit import PyBGPKITParser
 from pybgpflux.parsers.pybgpstream import PyBGPStreamParser
@@ -24,13 +24,13 @@ from pybgpflux.parsers.bgpparser import (
     BGPParser,
 )
 from pybgpflux.rislive import RISLiveStream, jitter_buffer_stream
-from pybgpflux.utils import Directory, get_shared_memory
+from pybgpflux.utils import Directory, get_shared_memory, dt_from_filepath
 from pybgpflux.downloader import (
     PREFETCH_SIZE,
     RCStream,
     cancel_all_tasks,
     safe_download_all,
-    RCUrlsWithQueues
+    RCUrlsWithQueues,
 )
 
 name2parser: dict[str, type[BGPParser]] = {
@@ -109,15 +109,16 @@ class BGPStream:
     def __init__(
         self,
         collectors: list[str],
-        data_type: list[Literal["ribs", "updates"]],
-        ts_start: float | None = None,
-        ts_end: float | None = None,
+        data_types: list[Literal["ribs", "updates"]],
+        ts_start: datetime.datetime | None = None,
+        ts_end: datetime.datetime | None = None,
         filters: FilterOptions | None = None,
         cache_dir: str | None = None,
         max_concurrent_downloads: int | None = 10,
         ram_fetch: bool | None = True,
         parser_name: str | None = "pybgpkit",
         remote_parse: bool | None = True,
+        broker: str | None = "bgpkit",
         jitter_buffer_delay: float | None = 10.0,
     ):
         """Initialize a BGP stream.
@@ -146,7 +147,7 @@ class BGPStream:
         self.ts_start = ts_start
         self.ts_end = ts_end
         self.collectors = collectors
-        self.data_type = data_type
+        self.data_types = data_types
         if not filters:
             filters = FilterOptions()
         self.filters = filters
@@ -156,20 +157,37 @@ class BGPStream:
             self.max_concurrent_downloads = max_concurrent_downloads
         else:
             self.max_concurrent_downloads = 10
+
         self.ram_fetch = ram_fetch
         self.cache_dir = cache_dir
+
         if not parser_name:
             self.parser_name = "pybgpkit"
         else:
             self.parser_name = parser_name
+
         if not remote_parse:
             self.remote_parse = True
         else:
             self.remote_parse = remote_parse
+
         if cache_dir:
             self.remote_parse = False
 
-        self.broker = bgpkit.Broker()
+        match broker:
+            case "bgpkit":
+                self.broker = BGPKITBroker()
+            case "bgpstream":
+                self.broker = BGPStreamBroker(
+                    url="https://broker.bgpstream.caida.org/v2"
+                )
+            case "bgpfinder":
+                self.broker = BGPStreamBroker(
+                    url="https://bgpfinder.inetintel.cc.gatech.edu"
+                )
+            case _:
+                self.broker = BGPKITBroker()
+
         self.parser_cls: type[BGPParser] = name2parser[self.parser_name]
 
         # Live config
@@ -181,15 +199,17 @@ class BGPStream:
             "ribs": defaultdict(lambda: ([], asyncio.Queue(maxsize=PREFETCH_SIZE))),
             "updates": defaultdict(lambda: ([], asyncio.Queue(maxsize=PREFETCH_SIZE))),
         }
-        for data_type in self.data_type:
-            items: list[BrokerItem] = self.broker.query( # type: ignore
-                ts_start=str(int(self.ts_start - 60)), # type: ignore
-                ts_end=str(int(self.ts_end)),  # type: ignore
-                collector_id=",".join(self.collectors),
-                data_type=data_type[:-1], # removes plural form
-            )
-            for item in items: # type: ignore
-                self.urls[data_type][item.collector_id][0].append(item.url) # type: ignore
+        config = BGPStreamConfig(
+            start_time=self.ts_start,
+            end_time=self.ts_end,
+            collectors=self.collectors,
+            data_types=self.data_types,
+        )
+        items = self.broker.query(config)
+        items.sort(key=lambda item: dt_from_filepath(item.url))
+
+        for item in items:
+            self.urls[item.data_type][item.collector_id][0].append(item.url)
 
     def __iter__(self):
         if self.ts_start is None and self.ts_end is None:
@@ -205,6 +225,8 @@ class BGPStream:
 
     def _iter_archive(self) -> Iterator[BGPElement]:
         """__iter__ for data types [ribs, updates] or [updates]"""
+        assert self.ts_start
+        assert self.ts_end
 
         if cache_dir := self.cache_dir:
             is_caching = True
@@ -230,12 +252,19 @@ class BGPStream:
             bg_thread.start()
             ready.wait()
 
-            is_remote_parsing = not is_caching and self.parser_cls.supports_remote_parsing and self.remote_parse
-            
+            is_remote_parsing = (
+                not is_caching
+                and self.parser_cls.supports_remote_parsing
+                and self.remote_parse
+            )
+
             # Kick off all download tasks in the background thread
             asyncio.run_coroutine_threadsafe(
                 safe_download_all(
-                    self.urls, cache_dir.name, self.max_concurrent_downloads, is_remote_parsing
+                    self.urls,
+                    cache_dir.name,
+                    self.max_concurrent_downloads,
+                    is_remote_parsing,
                 ),
                 loop,
             )
@@ -256,16 +285,17 @@ class BGPStream:
             ]
 
             try:
+                ts_start, ts_end = self.ts_start.timestamp(), self.ts_end.timestamp()
                 for bgpelem in merge(*streams, key=attrgetter("time")):
-                    if self.ts_start <= bgpelem.time <= self.ts_end: # type: ignore
+                    if ts_start <= bgpelem.time <= ts_end:
                         yield bgpelem
             finally:
                 # Cancel in-flight download tasks first so workers blocked on a
                 # full prefetch queue are released, then stop and close the loop.
                 try:
-                    asyncio.run_coroutine_threadsafe(
-                        cancel_all_tasks(), loop
-                    ).result(timeout=5.0)
+                    asyncio.run_coroutine_threadsafe(cancel_all_tasks(), loop).result(
+                        timeout=5.0
+                    )
                 except Exception as e:
                     logger.debug(f"Task cancellation during teardown failed: {e}")
                 loop.call_soon_threadsafe(loop.stop)
@@ -319,10 +349,10 @@ class BGPStream:
             case BGPStreamConfig():
                 if not config.is_live():
                     return cls(
-                        ts_start=config.start_time.timestamp(), # type: ignore
-                        ts_end=config.end_time.timestamp(), # type: ignore
+                        ts_start=config.start_time,  # type: ignore
+                        ts_end=config.end_time,  # type: ignore
                         collectors=config.collectors,
-                        data_type=config.data_types,
+                        data_types=config.data_types,
                         filters=config.filters if config.filters else FilterOptions(),
                         cache_dir=str(config.cache_dir) if config.cache_dir else None,
                         max_concurrent_downloads=config.max_concurrent_downloads
@@ -330,20 +360,21 @@ class BGPStream:
                         else 10,
                         ram_fetch=config.ram_fetch if config.ram_fetch else None,
                         parser_name=config.parser if config.parser else "pybgpkit",
-                        remote_parse=config.remote_parse if config.remote_parse else True
+                        remote_parse=config.remote_parse
+                        if config.remote_parse
+                        else True,
                     )
                 else:
                     return cls(
                         collectors=config.collectors,
-                        data_type=["updates"],
+                        data_types=["updates"],
                         filters=config.filters if config.filters else FilterOptions(),
                         jitter_buffer_delay=10,
-                )
+                    )
             case LiveStreamConfig():
-                
                 return cls(
                     collectors=config.collectors,
-                    data_type=["updates"],
+                    data_types=["updates"],
                     filters=config.filters if config.filters else FilterOptions(),
                     jitter_buffer_delay=config.jitter_buffer_delay,
                 )

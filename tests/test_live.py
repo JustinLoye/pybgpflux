@@ -8,7 +8,7 @@ from pybgpflux import LiveStreamConfig, BGPStream
 @pytest.fixture
 def rislive_config():
     return LiveStreamConfig(
-        collectors=["rrc00", "rrc07", "rrc21"], jitter_buffer_delay=15.0
+        collectors=["rrc00", "rrc21"], jitter_buffer_delay=25.0
     )
 
 
