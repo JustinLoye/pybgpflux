@@ -54,15 +54,6 @@ elem.peer_address # BGP peer IP
 elem.fields      # Dictionary with prefix, as-path, etc.
 ```
 
-## Parsers
-
-[Details about parser backends and how to select them →](parsers.md)
-
-- **pybgpkit**: Python bindings of bgpkit-parser, no system dependencies (default, slower)
-- **bgpkit-parser**: Fast Rust parser, requires system installation
-- **bgpdump**: Classic MRT parser, requires system installation
-- **pybgpstream**: Fast Python bindings for bgpstream, requires system installation
-
 ## Module Structure
 
 ```
@@ -71,7 +62,8 @@ pybgpflux/
 ├── bgpstream.py             # BGPStream class
 ├── bgpstreamconfig.py       # Configuration classes
 ├── bgpelement.py            # BGPElement NamedTuple
-├── bgpparser.py             # Parser implementations
+├── broker                   # Broker implementations
+├── parser                   # Parser implementations
 ├── rislive.py               # RIS Live streaming
 ├── utils.py                 # Utility functions
 └── cli.py                   # CLI interface

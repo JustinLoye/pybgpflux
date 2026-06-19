@@ -32,17 +32,18 @@ theme:
 nav:
   - Home: index.md
   - Getting Started: getting_started.md
-  - User Guide:
+  - User Guide: 
       - Configuration: guide/configuration.md
-      - Streaming Data: guide/streaming.md
       - Filtering: guide/filtering.md
+      - Parsers: guide/parsers.md
+      - Brokers: guide/brokers.md
+      - Streaming Data: guide/streaming.md
       - CLI Tool: guide/cli.md
   - API Reference:
       - Overview: api/overview.md
       - BGPStream: api/bgpstream.md
       - Configuration: api/configuration.md
       - BGPElement: api/bgpelement.md
-      - Parsers: api/parsers.md
   - Performance: performance.md
   - FAQ: faq.md
 
@@ -70,7 +71,9 @@ markdown_extensions:
   - pymdownx.highlight
   - pymdownx.superfences
   - pymdownx.inlinehilite
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      base_path:
+            - !relative $config_dir
   - pymdownx.tabbed:
       alternate_style: true
   - admonition

@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.5.2] - 2026-06-19
+
+### Added
+
+- Multiple broker support: Added support for different BGP brokers including BGPKIT (default), BGPStream, and BGPFinder
+- New broker abstraction layer `BGPBroker` with implementations `BGPKITBroker` and `BGPStreamBroker`
+- Added a new `broker` parameter to `BGPStreamConfig`, with supported values: `bgpkit`, `bgpstream`, and `bgpfinder`
+- Strict typing throughout the codebase
+
+### Changed
+
+- Refactored parsers with improved type annotations and bug fixes
+- Improved code structure with dedicated broker modules
+- Better crash handling for archives downloader
+
+### Fixed
+
+- Various bug fixes in parser implementations
+- Type annotation issues throughout the codebase
+
 ## [0.5.1] - 2026-06-08
 
 ### Added

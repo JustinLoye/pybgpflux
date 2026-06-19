@@ -130,6 +130,6 @@ print(f"Processed {element_count} elements")
 
 ## Further Reading
 
-- [Parser Backends Guide](api/parsers.md)
+- [Parser Backends Guide](guide/parsers.md)
 - [Filtering Guide](guide/filtering.md)
 - [Configuration Guide](guide/configuration.md)

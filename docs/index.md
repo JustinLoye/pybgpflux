@@ -12,6 +12,7 @@ A drop-in replacement for PyBGPStream using BGPKIT.
 - **High Performance**: Comparable to PyBGPStream
 - **Lazy Loading**: Minimal memory consumption suitable for large datasets
 - **Multiple Parsers**: Support for `pybgpkit`, `bgpkit-parser`, `bgpdump`, and `pybgpstream` parsers
+- **Multiple Brokers**: [`bgpkit`](https://bgpkit.com/tools/broker) (default, self-hostable), [`bgpstream`](https://bgpstream.caida.org/docs/api/broker), [`bgpfinder`](https://bgpfinder.inetintel.cc.gatech.edu) (self-hostable)
 - **Caching**: Concurrent downloading with BGPKIT parser caching compatibility
 - **Live Streaming**: Real-time BGP message streaming via RIS Live
 - **Flexible Filtering**: Filter by ASN, prefix, peer IP, ...

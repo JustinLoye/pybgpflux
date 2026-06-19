@@ -24,7 +24,7 @@ for elem in stream:
 
 ### With Implementation Options
 
-For control over caching, parser selection, and download concurrency, pass the optional parameters directly:
+For control over caching, parser selection, broker selection, and download concurrency, pass the optional parameters directly:
 
 ```python
 from pybgpflux import BGPStreamConfig, BGPStream
@@ -38,6 +38,7 @@ config = BGPStreamConfig(
     data_types=["updates"],
     # Implementation parameters (all optional)
     parser="bgpkit",
+    broker="bgpstream",
     max_concurrent_downloads=20,
     cache_dir="/tmp/bgp_cache",
     ram_fetch=True,

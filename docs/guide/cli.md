@@ -1,6 +1,7 @@
 # CLI Tool
 
 PyBGPFlux includes a command-line interface for quick BGP data exploration.
+For a high-performance CLI, check out [bgpflux](https://github.com/JustinLoye/bgpflux).
 
 ## Installation
 

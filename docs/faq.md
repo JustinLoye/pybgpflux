@@ -10,17 +10,18 @@ The goal of PyBGPStream and PyBGPFlux is to abstract these complexities away. Th
 
 ## Why a new library to stream BGP data?
 
-While PyBGPStream has long been the primary tool for streaming historical BGP data from multiple collectors, it is currently no longer actively maintained. As of early 2026, several key features have become unreliable or non-functional, specifically support for RIS Live and data from certain RIS collectors.
+While PyBGPStream has long been the primary tool for streaming historical BGP data from multiple collectors, it is currently no longer actively maintained. As of early 2026, several key features are lagging (extended communities, RFC 9234) or have become unreliable (broker).
 
-PyBGPFlux was developed to fill this gap, providing a modern, maintained alternative that restores these capabilities while offering the performance benefits of the BGPKIT ecosystem.
+PyBGPFlux was developed to fill this gap, providing a modern, maintained alternative that restores these capabilities.
+Rather than relying on simple bindings, PyBGPFlux is a library designed for maximum flexibility and resilience, utilizing Python to seamlessly integrate multiple parsers and brokers.
 
 ## What's the difference between PyBGPFlux and PyBGPStream?
 
-PyBGPFlux is a drop-in replacement for PyBGPStream that uses BGPKIT for retrieve and parsing MRT files. Key advantages:
+PyBGPFlux is a drop-in replacement for PyBGPStream that uses by default BGPKIT for retrieve and parsing MRT files. Key advantages:
 
-- **More flexible**: Multiple parser backends
+- **More flexible**: Multiple parser and broker backends
+- **No down time**: BGPKIT broker and BGPFinder can be self-hosted
 - **Modern Python**: Type hints, pydantic for configuration
-- **No down time**: Uses BGPKIT broker that can be self-hosted
 
 Setting up the stream is different, but the output BGP elements have the same format.
 
@@ -103,14 +104,13 @@ for elem in stream:
 
 ## The stream is slow. How do I improve it?
 
-1. **Switch parser**: Use `pybgpstream` parser instead of `pybgpkit`
+1. **Switch parser**: Use `pybgpstream` or `bgpkit` parser instead of `pybgpkit`
 
 2. **Add filters**: Reduce the dataset
 
 3. **Reduce time window**: Request less data
 
 See [Performance Guide](performance.md) for more tips.
-
 
 ## Can I process very large datasets?
 

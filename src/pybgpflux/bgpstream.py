@@ -125,7 +125,7 @@ class BGPStream:
 
         Args:
             collectors: List of collector names (e.g., ["route-views.wide", "rrc04"]).
-            data_type: List of data types to stream ("update", "rib", or both).
+            data_types: List of data types to stream ("update", "rib", or both).
             ts_start: Start timestamp (Unix epoch) for historical data. None for live mode.
             ts_end: End timestamp (Unix epoch) for historical data. None for live mode.
             filters: Optional FilterOptions to filter BGP elements. Defaults to no filtering.
@@ -134,6 +134,7 @@ class BGPStream:
             ram_fetch: Use RAM disk for temporary files if available. Default is True.
             parser_name: Parser backend ("pybgpkit", "bgpkit", "bgpdump", "pybgpstream").
                 Default is "pybgpkit" (no system dependencies).
+            broker: Archive file broker to query. Default is "bgpkit".
             jitter_buffer_delay: Delay (seconds) for jitter buffer in live mode. Default is 10.0.
 
         Raises:
@@ -194,7 +195,7 @@ class BGPStream:
         self.jitter_buffer_delay = jitter_buffer_delay
 
     def _set_urls(self):
-        """Set archive files URL with bgpkit broker and setup prefetch queues"""
+        """Set archive files URL with a broker and setup prefetch queues"""
         self.urls: RCUrlsWithQueues = {
             "ribs": defaultdict(lambda: ([], asyncio.Queue(maxsize=PREFETCH_SIZE))),
             "updates": defaultdict(lambda: ([], asyncio.Queue(maxsize=PREFETCH_SIZE))),

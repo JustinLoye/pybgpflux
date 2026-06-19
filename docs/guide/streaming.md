@@ -86,6 +86,6 @@ for elem in stream:
 PyBGPFlux uses lazy loading to minimize memory usage:
 
 - Elements are parsed on-demand, not loaded into memory upfront
-- Large file downloads are processed chunk by chunk
+- Archive files are prefetched only one ahead of time
 
 ### Next: [CLI Tool](cli.md)

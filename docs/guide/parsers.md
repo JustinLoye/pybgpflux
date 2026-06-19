@@ -11,10 +11,6 @@ PyBGPFlux supports multiple parser backends for different use cases.
 - **Dependencies**: None
 - **Use Case**: Zero-dependency installation, prototyping
 
-```python
-stream = BGPStream.from_config(config, parser_name="pybgpkit")
-```
-
 ### BGPKIT Parser
 
 - **Name**: `bgpkit`
@@ -27,8 +23,15 @@ Installation:
 cargo install bgpkit-parser --features cli
 ```
 
+Usage:
 ```python
-stream = BGPStream.from_config(config, parser_name="bgpkit")
+from pybgpflux import BGPStreamConfig, BGPStream
+
+config = BGPStreamConfig(
+    ...,
+    parser="bgpkit",
+)
+stream = BGPStream.from_config(config)
 ```
 
 ### BGPDump
@@ -43,23 +46,15 @@ Installation:
 apt-get install bgpdump
 ```
 
-```python
-stream = BGPStream.from_config(config, parser_name="bgpdump")
-```
-
 ### PyBGPStream
 
 - **Name**: `pybgpstream`
 - **Speed**: Fastest
 - **Remote parsing**: Yes (parse directly from URL, no local download)
-- **Dependencies**: `pip install pybgpstream`
+- **Dependencies**: libbgpstream and `pip install pybgpstream`
 - **Use Case**: Large-scale processing, low-disk/RAM environments
 
 Installation: follow the [CI steps](https://github.com/JustinLoye/pybgpflux/blob/main/.github/workflows/ci.yml)
-
-```python
-stream = BGPStream.from_config(config, parser_name="pybgpstream")
-```
 
 When `remote_parse=True` (the default), `pybgpstream` parses MRT archives directly from their remote URLs without saving them to disk or RAM first. This is useful for memory-constrained environments or when processing large RIB files.
 
@@ -73,3 +68,13 @@ config = BGPStreamConfig(
 )
 stream = BGPStream.from_config(config)
 ```
+
+## Using parsers on a single file
+
+You can also use parsers independently:
+
+```python
+--8<-- "examples/parser_standalone.py"
+```
+
+### Next: [Available brokers](brokers.md)
