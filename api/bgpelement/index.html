@@ -16,7 +16,7 @@
         <link rel="prev" href="../configuration/">
       
       
-        <link rel="next" href="../parsers/">
+        <link rel="next" href="../../performance/">
       
       
         
@@ -523,14 +523,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/streaming/" class="md-nav__link">
+      <a href="../../guide/filtering/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Streaming Data
+    Filtering
   
 
     
@@ -551,14 +551,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/filtering/" class="md-nav__link">
+      <a href="../../guide/parsers/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Filtering
+    Parsers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/brokers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Brokers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/streaming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Streaming Data
   
 
     
@@ -882,34 +938,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../parsers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Parsers
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1109,12 +1137,7 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/pybgpflux/bgpelement.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span>
 <span class="normal">22</span>
@@ -1147,46 +1170,39 @@
 <span class="normal">49</span>
 <span class="normal">50</span>
 <span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BGPElement</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="normal">52</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BGPElement</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compatible with pybgpstream.BGPElem&quot;&quot;&quot;</span>
 
-    <span class="n">time</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># time first for sorting tuples convention</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">float</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;R&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;W&quot;</span><span class="p">]</span>
     <span class="n">collector</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">peer_asn</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">peer_address</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">fields</span><span class="p">:</span> <span class="n">ElementFields</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Credit to pybgpstream&quot;&quot;&quot;</span>
+        <span class="n">communities_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;communities&quot;</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">|</span><span class="si">%f</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">collector</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">peer_asn</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">peer_address</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_field</span><span class="p">(</span><span class="s2">&quot;prefix&quot;</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_field</span><span class="p">(</span><span class="s2">&quot;next-hop&quot;</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;as-path&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;as-path&#39;</span><span class="p">)</span>
-            <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;communities&quot;</span><span class="p">])</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;communities&#39;</span><span class="p">)</span>
-            <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_field</span><span class="p">(</span><span class="s2">&quot;old-state&quot;</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_field</span><span class="p">(</span><span class="s2">&quot;new-state&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prefix&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;next-hop&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;as-path&quot;</span><span class="p">),</span>
+            <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">communities_val</span><span class="p">)</span> <span class="k">if</span> <span class="n">communities_val</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;old-state&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;new-state&quot;</span><span class="p">),</span>
         <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_maybe_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Credit to pybgpstream&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="k">else</span> <span class="kc">None</span>
-
     <span class="c1"># Useful for sorting streams</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;BGPElement&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore[reportIncompatibleMethodOverride]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">time</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;BGPElement&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># type: ignore[reportIncompatibleMethodOverride]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">&lt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">time</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -1220,12 +1236,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/pybgpflux/bgpelement.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">29</span>
 <span class="normal">30</span>
 <span class="normal">31</span>
 <span class="normal">32</span>
@@ -1238,24 +1249,25 @@
 <span class="normal">39</span>
 <span class="normal">40</span>
 <span class="normal">41</span>
-<span class="normal">42</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Credit to pybgpstream&quot;&quot;&quot;</span>
+    <span class="n">communities_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;communities&quot;</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">|</span><span class="si">%f</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">|</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">collector</span><span class="p">,</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">peer_asn</span><span class="p">,</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">peer_address</span><span class="p">,</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_field</span><span class="p">(</span><span class="s2">&quot;prefix&quot;</span><span class="p">),</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_field</span><span class="p">(</span><span class="s2">&quot;next-hop&quot;</span><span class="p">),</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;as-path&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;as-path&#39;</span><span class="p">)</span>
-        <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;communities&quot;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;communities&#39;</span><span class="p">)</span>
-        <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_field</span><span class="p">(</span><span class="s2">&quot;old-state&quot;</span><span class="p">),</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_field</span><span class="p">(</span><span class="s2">&quot;new-state&quot;</span><span class="p">),</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prefix&quot;</span><span class="p">),</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;next-hop&quot;</span><span class="p">),</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;as-path&quot;</span><span class="p">),</span>
+        <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">communities_val</span><span class="p">)</span> <span class="k">if</span> <span class="n">communities_val</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;old-state&quot;</span><span class="p">),</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;new-state&quot;</span><span class="p">),</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>

@@ -523,14 +523,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/streaming/" class="md-nav__link">
+      <a href="../../guide/filtering/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Streaming Data
+    Filtering
   
 
     
@@ -551,14 +551,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/filtering/" class="md-nav__link">
+      <a href="../../guide/parsers/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Filtering
+    Parsers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/brokers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Brokers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/streaming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Streaming Data
   
 
     
@@ -779,17 +835,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#parsers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parsers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#module-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -891,34 +936,6 @@
     
   
     BGPElement
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../parsers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Parsers
   
 
     
@@ -1070,17 +1087,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#parsers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parsers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#module-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1165,21 +1171,14 @@
 <span class="n">elem</span><span class="o">.</span><span class="n">peer_address</span> <span class="c1"># BGP peer IP</span>
 <span class="n">elem</span><span class="o">.</span><span class="n">fields</span>      <span class="c1"># Dictionary with prefix, as-path, etc.</span>
 </code></pre></div>
-<h2 id="parsers">Parsers<a class="headerlink" href="#parsers" title="Permanent link">&para;</a></h2>
-<p><a href="../parsers/">Details about parser backends and how to select them →</a></p>
-<ul>
-<li><strong>pybgpkit</strong>: Python bindings of bgpkit-parser, no system dependencies (default, slower)</li>
-<li><strong>bgpkit-parser</strong>: Fast Rust parser, requires system installation</li>
-<li><strong>bgpdump</strong>: Classic MRT parser, requires system installation</li>
-<li><strong>pybgpstream</strong>: Fast Python bindings for bgpstream, requires system installation</li>
-</ul>
 <h2 id="module-structure">Module Structure<a class="headerlink" href="#module-structure" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>pybgpflux/
 ├── __init__.py              # Main exports
 ├── bgpstream.py             # BGPStream class
 ├── bgpstreamconfig.py       # Configuration classes
 ├── bgpelement.py            # BGPElement NamedTuple
-├── bgpparser.py             # Parser implementations
+├── broker                   # Broker implementations
+├── parser                   # Parser implementations
 ├── rislive.py               # RIS Live streaming
 ├── utils.py                 # Utility functions
 └── cli.py                   # CLI interface

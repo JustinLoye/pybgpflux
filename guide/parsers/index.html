@@ -13,10 +13,10 @@
       
       
       
-        <link rel="prev" href="../brokers/">
+        <link rel="prev" href="../filtering/">
       
       
-        <link rel="next" href="../cli/">
+        <link rel="next" href="../brokers/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Streaming Data - PyBGPFlux</title>
+        <title>Parsers - PyBGPFlux</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#streaming-data" class="md-skip">
+        <a href="#parser-backends" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Streaming Data
+              Parsers
             
           </span>
         </div>
@@ -553,10 +553,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../parsers/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parsers
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -572,6 +599,115 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#available-parsers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Parsers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Available Parsers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pybgpkit-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PyBGPKIT (Default)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bgpkit-parser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BGPKIT Parser
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bgpdump" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BGPDump
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pybgpstream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PyBGPStream
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-parsers-on-a-single-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using parsers on a single file
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using parsers on a single file">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#next-available-brokers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next: Available brokers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -609,37 +745,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Streaming Data
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../streaming/" class="md-nav__link">
         
   
   
@@ -655,137 +764,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#basic-iteration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Basic Iteration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#bgpelement-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BGPElement Structure
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#pybgpflux.bgpelement.BGPElement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BGPElement
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="BGPElement">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pybgpflux.bgpelement.BGPElement.__str__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        __str__
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#element-fields-dictionary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Element Fields (Dictionary)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#element-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Element Types
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#live-streaming" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Live Streaming
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#memory-efficiency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Memory Efficiency
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Memory Efficiency">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#next-cli-tool" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next: CLI Tool
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1076,44 +1054,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#basic-iteration" class="md-nav__link">
+  <a href="#available-parsers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Basic Iteration
+        Available Parsers
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#bgpelement-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BGPElement Structure
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#pybgpflux.bgpelement.BGPElement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BGPElement
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="BGPElement">
+    <nav class="md-nav" aria-label="Available Parsers">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pybgpflux.bgpelement.BGPElement.__str__" class="md-nav__link">
+  <a href="#pybgpkit-default" class="md-nav__link">
     <span class="md-ellipsis">
       
-        __str__
+        PyBGPKIT (Default)
       
     </span>
   </a>
@@ -1121,10 +1077,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#element-fields-dictionary" class="md-nav__link">
+  <a href="#bgpkit-parser" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Element Fields (Dictionary)
+        BGPKIT Parser
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bgpdump" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BGPDump
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pybgpstream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PyBGPStream
       
     </span>
   </a>
@@ -1137,44 +1115,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#element-types" class="md-nav__link">
+  <a href="#using-parsers-on-a-single-file" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Element Types
+        Using parsers on a single file
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#live-streaming" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Live Streaming
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#memory-efficiency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Memory Efficiency
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Memory Efficiency">
+    <nav class="md-nav" aria-label="Using parsers on a single file">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#next-cli-tool" class="md-nav__link">
+  <a href="#next-available-brokers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next: CLI Tool
+        Next: Available brokers
       
     </span>
   </a>
@@ -1206,139 +1162,88 @@
   
 
 
-<h1 id="streaming-data">Streaming Data<a class="headerlink" href="#streaming-data" title="Permanent link">&para;</a></h1>
-<p>Understand how to stream and process BGP data efficiently.</p>
-<h2 id="basic-iteration">Basic Iteration<a class="headerlink" href="#basic-iteration" title="Permanent link">&para;</a></h2>
-<p>The simplest way to process BGP data:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pybgpflux</span><span class="w"> </span><span class="kn">import</span> <span class="n">BGPStreamConfig</span><span class="p">,</span> <span class="n">BGPStream</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
-
-<span class="n">config</span> <span class="o">=</span> <span class="n">BGPStreamConfig</span><span class="p">(</span>
-    <span class="n">start_time</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-    <span class="n">end_time</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-    <span class="n">collectors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;route-views.wide&quot;</span><span class="p">],</span>
-<span class="p">)</span>
-
-<span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">elem</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">|</span><span class="si">{</span><span class="n">elem</span><span class="o">.</span><span class="n">time</span><span class="si">}</span><span class="s2">|</span><span class="si">{</span><span class="n">elem</span><span class="o">.</span><span class="n">collector</span><span class="si">}</span><span class="s2">|</span><span class="si">{</span><span class="n">elem</span><span class="o">.</span><span class="n">peer_asn</span><span class="si">}</span><span class="s2">|</span><span class="si">{</span><span class="n">elem</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;prefix&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="bgpelement-structure">BGPElement Structure<a class="headerlink" href="#bgpelement-structure" title="Permanent link">&para;</a></h2>
-<p>Each element in the stream is a <code>BGPElement</code> namedtuple:</p>
-
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="pybgpflux.bgpelement.BGPElement" class="doc doc-heading">
-            <code>pybgpflux.bgpelement.BGPElement</code>
-
-
-<a href="#pybgpflux.bgpelement.BGPElement" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><span title="typing.NamedTuple">NamedTuple</span></code></p>
-
-
-
-        <p>Compatible with pybgpstream.BGPElem</p>
-
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="pybgpflux.bgpelement.BGPElement.__str__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__str__</span><span class="p">()</span></code>
-
-<a href="#pybgpflux.bgpelement.BGPElement.__str__" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Credit to pybgpstream</p>
-
-
-    </div>
-
-</div>
-
-
-
-  </div>
-
-    </div>
-
-</div><h3 id="element-fields-dictionary">Element Fields (Dictionary)<a class="headerlink" href="#element-fields-dictionary" title="Permanent link">&para;</a></h3>
-<p>The <code>fields</code> attribute contains message-specific data:</p>
-<div class="highlight"><pre><span></span><code><span class="n">elem</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;192.0.2.0/24&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;next-hop&quot;</span><span class="p">:</span> <span class="s2">&quot;192.0.2.1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;as-path&quot;</span><span class="p">:</span> <span class="s2">&quot;2497 2498 2499&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;communities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;2497:100&quot;</span><span class="p">,</span> <span class="s2">&quot;2498:200&quot;</span><span class="p">],</span>
-<span class="p">}</span>
-</code></pre></div>
-<h2 id="element-types">Element Types<a class="headerlink" href="#element-types" title="Permanent link">&para;</a></h2>
-<p>Three types of BGP messages are available:</p>
+<h1 id="parser-backends">Parser Backends<a class="headerlink" href="#parser-backends" title="Permanent link">&para;</a></h1>
+<p>PyBGPFlux supports multiple parser backends for different use cases.</p>
+<h2 id="available-parsers">Available Parsers<a class="headerlink" href="#available-parsers" title="Permanent link">&para;</a></h2>
+<h3 id="pybgpkit-default">PyBGPKIT (Default)<a class="headerlink" href="#pybgpkit-default" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>R (RIB)</strong>: Complete routing table snapshot</li>
-<li><strong>A (Announce)</strong>: New or updated prefix announcement</li>
-<li><strong>W (Withdraw)</strong>: Prefix withdrawal</li>
+<li><strong>Name</strong>: <code>pybgpkit</code></li>
+<li><strong>Speed</strong>: Slow</li>
+<li><strong>Dependencies</strong>: None</li>
+<li><strong>Use Case</strong>: Zero-dependency installation, prototyping</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">elem</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;R&quot;</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RIB: </span><span class="si">{</span><span class="n">elem</span><span class="o">.</span><span class="n">prefix</span><span class="si">}</span><span class="s2"> → </span><span class="si">{</span><span class="n">elem</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;next-hop&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">elem</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Announce: </span><span class="si">{</span><span class="n">elem</span><span class="o">.</span><span class="n">prefix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">elem</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;W&quot;</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Withdraw: </span><span class="si">{</span><span class="n">elem</span><span class="o">.</span><span class="n">prefix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="live-streaming">Live Streaming<a class="headerlink" href="#live-streaming" title="Permanent link">&para;</a></h2>
-<p>Stream real-time BGP updates from RIS Live:</p>
+<h3 id="bgpkit-parser">BGPKIT Parser<a class="headerlink" href="#bgpkit-parser" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Name</strong>: <code>bgpkit</code></li>
+<li><strong>Speed</strong>: Fast (~10x faster than pybgpkit)</li>
+<li><strong>Dependencies</strong>: Install from cargo</li>
+<li><strong>Use Case</strong>: Large-scale processing</li>
+</ul>
+<p>Installation:
+<div class="highlight"><pre><span></span><code>cargo<span class="w"> </span>install<span class="w"> </span>bgpkit-parser<span class="w"> </span>--features<span class="w"> </span>cli
+</code></pre></div></p>
+<p>Usage:
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pybgpflux</span><span class="w"> </span><span class="kn">import</span> <span class="n">BGPStreamConfig</span><span class="p">,</span> <span class="n">BGPStream</span>
 
-<span class="c1"># Live mode: no start_time or end_time</span>
 <span class="n">config</span> <span class="o">=</span> <span class="n">BGPStreamConfig</span><span class="p">(</span>
-    <span class="n">collectors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rrc00&quot;</span><span class="p">,</span> <span class="s2">&quot;rrc01&quot;</span><span class="p">],</span>
-    <span class="n">data_types</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;updates&quot;</span><span class="p">],</span>
+    <span class="o">...</span><span class="p">,</span>
+    <span class="n">parser</span><span class="o">=</span><span class="s2">&quot;bgpkit&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div></p>
+<h3 id="bgpdump">BGPDump<a class="headerlink" href="#bgpdump" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Name</strong>: <code>bgpdump</code></li>
+<li><strong>Speed</strong>: Fast, comparable to BGPKIT</li>
+<li><strong>Dependencies</strong>: Classic MRT parser utility</li>
+<li><strong>Use Case</strong>: Legacy systems, compatibility</li>
+</ul>
+<p>Installation:
+<div class="highlight"><pre><span></span><code>apt-get<span class="w"> </span>install<span class="w"> </span>bgpdump
+</code></pre></div></p>
+<h3 id="pybgpstream">PyBGPStream<a class="headerlink" href="#pybgpstream" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Name</strong>: <code>pybgpstream</code></li>
+<li><strong>Speed</strong>: Fastest</li>
+<li><strong>Remote parsing</strong>: Yes (parse directly from URL, no local download)</li>
+<li><strong>Dependencies</strong>: libbgpstream and <code>pip install pybgpstream</code></li>
+<li><strong>Use Case</strong>: Large-scale processing, low-disk/RAM environments</li>
+</ul>
+<p>Installation: follow the <a href="https://github.com/JustinLoye/pybgpflux/blob/main/.github/workflows/ci.yml">CI steps</a></p>
+<p>When <code>remote_parse=True</code> (the default), <code>pybgpstream</code> parses MRT archives directly from their remote URLs without saving them to disk or RAM first. This is useful for memory-constrained environments or when processing large RIB files.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pybgpflux</span><span class="w"> </span><span class="kn">import</span> <span class="n">BGPStreamConfig</span><span class="p">,</span> <span class="n">BGPStream</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">BGPStreamConfig</span><span class="p">(</span>
+    <span class="o">...</span><span class="p">,</span>
+    <span class="n">parser</span><span class="o">=</span><span class="s2">&quot;pybgpstream&quot;</span><span class="p">,</span>
+    <span class="n">remote_parse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>   <span class="c1"># default — skip local download entirely</span>
+<span class="p">)</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="using-parsers-on-a-single-file">Using parsers on a single file<a class="headerlink" href="#using-parsers-on-a-single-file" title="Permanent link">&para;</a></h2>
+<p>You can also use parsers independently:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pybgpflux.bgpstreamconfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">FilterOptions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pybgpflux.parsers</span><span class="w"> </span><span class="kn">import</span> <span class="n">BGPdumpParser</span><span class="p">,</span> <span class="n">BGPKITParser</span>
+
+<span class="n">filters</span> <span class="o">=</span> <span class="n">FilterOptions</span><span class="p">(</span><span class="n">peer_asn</span><span class="o">=</span><span class="mi">2497</span><span class="p">)</span>
+
+<span class="n">bgpdump_parser</span> <span class="o">=</span> <span class="n">BGPdumpParser</span><span class="p">(</span>
+    <span class="n">collector</span><span class="o">=</span><span class="s2">&quot;route-views.wide&quot;</span><span class="p">,</span>
+    <span class="n">is_rib</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;updates.20100901.0000.bz2&quot;</span><span class="p">,</span>
+    <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">stream</span> <span class="o">=</span> <span class="n">BGPStream</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="n">bgpkit_parser</span> <span class="o">=</span> <span class="n">BGPKITParser</span><span class="p">(</span>
+    <span class="n">collector</span><span class="o">=</span><span class="s2">&quot;route-views.wide&quot;</span><span class="p">,</span>
+    <span class="n">is_rib</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;updates.20100901.0000.bz2&quot;</span><span class="p">,</span>
+    <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">,</span>
+<span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Streaming live BGP updates...&quot;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">elem</span><span class="o">.</span><span class="n">collector</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">elem</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">elem</span><span class="o">.</span><span class="n">prefix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">bgpdump_parser</span><span class="p">)</span> <span class="o">==</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">bgpkit_parser</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="memory-efficiency">Memory Efficiency<a class="headerlink" href="#memory-efficiency" title="Permanent link">&para;</a></h2>
-<p>PyBGPFlux uses lazy loading to minimize memory usage:</p>
-<ul>
-<li>Elements are parsed on-demand, not loaded into memory upfront</li>
-<li>Archive files are prefetched only one ahead of time</li>
-</ul>
-<h3 id="next-cli-tool">Next: <a href="../cli/">CLI Tool</a><a class="headerlink" href="#next-cli-tool" title="Permanent link">&para;</a></h3>
+<h3 id="next-available-brokers">Next: <a href="../brokers/">Available brokers</a><a class="headerlink" href="#next-available-brokers" title="Permanent link">&para;</a></h3>
 
 
 

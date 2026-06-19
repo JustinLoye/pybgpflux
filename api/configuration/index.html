@@ -523,14 +523,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/streaming/" class="md-nav__link">
+      <a href="../../guide/filtering/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Streaming Data
+    Filtering
   
 
     
@@ -551,14 +551,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/filtering/" class="md-nav__link">
+      <a href="../../guide/parsers/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Filtering
+    Parsers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/brokers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Brokers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/streaming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Streaming Data
   
 
     
@@ -917,6 +973,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.broker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        broker
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1169,34 +1236,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../parsers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Parsers
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1411,6 +1450,17 @@
     <span class="md-ellipsis">
       
         remote_parse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.broker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        broker
       
     </span>
   </a>
@@ -1902,26 +1952,19 @@
 <span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;array&quot;</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="nt">&quot;data_types&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;anyOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;items&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">              </span><span class="s2">&quot;ribs&quot;</span><span class="p">,</span>
-<span class="w">              </span><span class="s2">&quot;updates&quot;</span>
-<span class="w">            </span><span class="p">],</span>
-<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
-<span class="w">          </span><span class="p">},</span>
-<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;array&quot;</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;null&quot;</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">],</span>
 <span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="s2">&quot;updates&quot;</span>
 <span class="w">      </span><span class="p">],</span>
 <span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;List of archives files to consider (`ribs` or `updates`)&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Data Types&quot;</span>
+<span class="w">      </span><span class="nt">&quot;items&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;ribs&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;updates&quot;</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Data Types&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;array&quot;</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="nt">&quot;filters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;anyOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
@@ -1999,6 +2042,24 @@
 <span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Parse directly from a remote source without saving archives locally or in RAM. Currently supported only by the pybgpstream parser.&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Remote Parse&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;broker&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;anyOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">            </span><span class="s2">&quot;bgpkit&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;bgpstream&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;bgpfinder&quot;</span>
+<span class="w">          </span><span class="p">],</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;null&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bgpkit&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BGP archive data broker&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Broker&quot;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
@@ -2043,7 +2104,7 @@
   
       pydantic-field
    (pybgpflux.bgpstreamconfig.BGPStreamConfig.data_types)" href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.data_types">data_types</a></code>
-                (<code><span title="list">list</span>[<span title="typing.Literal">Literal</span>[&#39;ribs&#39;, &#39;updates&#39;]] | None</code>)
+                (<code><span title="list">list</span>[<span title="typing.Literal">Literal</span>[&#39;ribs&#39;, &#39;updates&#39;]]</code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="filters = None
@@ -2098,6 +2159,14 @@
    (pybgpflux.bgpstreamconfig.BGPStreamConfig.remote_parse)" href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.remote_parse">remote_parse</a></code>
                 (<code><span title="bool">bool</span> | None</code>)
             </li>
+            <li>
+              <code><a class="autorefs autorefs-internal" title="broker = 'bgpkit'
+
+  
+      pydantic-field
+   (pybgpflux.bgpstreamconfig.BGPStreamConfig.broker)" href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.broker">broker</a></code>
+                (<code><span title="typing.Literal">Literal</span>[&#39;bgpkit&#39;, &#39;bgpstream&#39;, &#39;bgpfinder&#39;] | None</code>)
+            </li>
         </ul>
 
         <p>Validators:</p>
@@ -2123,7 +2192,7 @@
       pydantic-field
    (pybgpflux.bgpstreamconfig.BGPStreamConfig.parser)" href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.parser">parser</a></code>            </li>
             <li>
-              <code><span title="pybgpflux.bgpstreamconfig.BGPStreamConfig.validate">validate</span></code>
+              <code><span title="pybgpflux.bgpstreamconfig.BGPStreamConfig.sanitize">sanitize</span></code>
             </li>
         </ul>
 
@@ -2241,9 +2310,7 @@
 <span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BGPStreamConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">162</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BGPStreamConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Unified BGPStream config&quot;&quot;&quot;</span>
 
     <span class="c1"># --- Query parameters (required) ---</span>
@@ -2254,7 +2321,7 @@
         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;End of the stream&quot;</span>
     <span class="p">)</span>
     <span class="n">collectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;List of collectors to get data from&quot;</span><span class="p">)</span>
-    <span class="n">data_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ribs&quot;</span><span class="p">,</span> <span class="s2">&quot;updates&quot;</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+    <span class="n">data_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ribs&quot;</span><span class="p">,</span> <span class="s2">&quot;updates&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;updates&quot;</span><span class="p">],</span>
         <span class="n">description</span><span class="o">=</span><span class="s2">&quot;List of archives files to consider (`ribs` or `updates`)&quot;</span><span class="p">,</span>
     <span class="p">)</span>
@@ -2288,12 +2355,13 @@
             <span class="s2">&quot;Currently supported only by the pybgpstream parser.&quot;</span>
         <span class="p">),</span>
     <span class="p">)</span>
+    <span class="n">broker</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bgpkit&quot;</span><span class="p">,</span> <span class="s2">&quot;bgpstream&quot;</span><span class="p">,</span> <span class="s2">&quot;bgpfinder&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;bgpkit&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;BGP archive data broker&quot;</span>
+    <span class="p">)</span>
 
     <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;start_time&quot;</span><span class="p">,</span> <span class="s2">&quot;end_time&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">normalize_to_utc</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">dt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
         <span class="c1"># if naive datetime (not timezone-aware) assume it&#39;s UTC</span>
         <span class="k">if</span> <span class="n">dt</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">dt</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
@@ -2305,13 +2373,13 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">check_parser_available</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">parser</span> <span class="o">==</span> <span class="s2">&quot;pybgpkit&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;bgpkit&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;bgpkit&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="s2">&quot;pybgpkit is not installed. Install with: pip install pybgpkit&quot;</span>
                 <span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">parser</span> <span class="o">==</span> <span class="s2">&quot;pybgpstream&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;pybgpstream&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;pybgpstream&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="s2">&quot;pybgpstream is not installed. &quot;</span>
                     <span class="s2">&quot;Install with: pip install pybgpstream (ensure system dependencies are met)&quot;</span>
@@ -2335,20 +2403,17 @@
         <span class="k">return</span> <span class="n">parser</span>
 
     <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BGPStreamConfig&quot;</span><span class="p">:</span>
-
+    <span class="k">def</span><span class="w"> </span><span class="nf">sanitize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BGPStreamConfig&quot;</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;Provide both start and end times, or leave both as None for live mode.&quot;</span>
             <span class="p">)</span>
 
-
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_live</span><span class="p">():</span>
-            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_time</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_time</span>  <span class="c1"># type: ignore[reportOperatorIssue]</span>
         <span class="c1"># Force data_type to update for live mode</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_types</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;updates&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;updates&quot;</span><span class="p">]</span>
 
         <span class="c1"># Disable remote parsing when caching</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="p">:</span>
@@ -2585,6 +2650,28 @@
     <div class="doc doc-contents ">
 
         <p>Parse directly from a remote source without saving archives locally or in RAM. Currently supported only by the pybgpstream parser.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pybgpflux.bgpstreamconfig.BGPStreamConfig.broker" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">broker</span> <span class="o">=</span> <span class="s1">&#39;bgpkit&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-pydantic-field"><code>pydantic-field</code></small>
+  </span>
+
+<a href="#pybgpflux.bgpstreamconfig.BGPStreamConfig.broker" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>BGP archive data broker</p>
 
     </div>
 
@@ -3535,7 +3622,9 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/pybgpflux/bgpstreamconfig.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">167</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
 <span class="normal">168</span>
 <span class="normal">169</span>
 <span class="normal">170</span>
@@ -3543,9 +3632,7 @@
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LiveStreamConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LiveStreamConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Config for live mode&quot;&quot;&quot;</span>
 
     <span class="n">collectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>

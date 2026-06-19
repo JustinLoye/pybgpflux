@@ -521,14 +521,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../guide/streaming/" class="md-nav__link">
+      <a href="../guide/filtering/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Streaming Data
+    Filtering
   
 
     
@@ -549,14 +549,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../guide/filtering/" class="md-nav__link">
+      <a href="../guide/parsers/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Filtering
+    Parsers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/brokers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Brokers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/streaming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Streaming Data
   
 
     
@@ -754,34 +810,6 @@
     
   
     BGPElement
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../api/parsers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Parsers
   
 
     
@@ -1209,14 +1237,15 @@
 <p>Even basic historical BGP data queries often involve several manual steps: locating the correct archive, downloading it, and parsing the contents. For more complex queries, such as those involving multiple collectors or specific time ranges, the difficulty increases as users have to manually manage and synchronize numerous archive files.</p>
 <p>The goal of PyBGPStream and PyBGPFlux is to abstract these complexities away. This allows users to focus on the actual data analysis rather than the infrastructure and boilerplate code required to fetch it.</p>
 <h2 id="why-a-new-library-to-stream-bgp-data">Why a new library to stream BGP data?<a class="headerlink" href="#why-a-new-library-to-stream-bgp-data" title="Permanent link">&para;</a></h2>
-<p>While PyBGPStream has long been the primary tool for streaming historical BGP data from multiple collectors, it is currently no longer actively maintained. As of early 2026, several key features have become unreliable or non-functional, specifically support for RIS Live and data from certain RIS collectors.</p>
-<p>PyBGPFlux was developed to fill this gap, providing a modern, maintained alternative that restores these capabilities while offering the performance benefits of the BGPKIT ecosystem.</p>
+<p>While PyBGPStream has long been the primary tool for streaming historical BGP data from multiple collectors, it is currently no longer actively maintained. As of early 2026, several key features are lagging (extended communities, RFC 9234) or have become unreliable (broker).</p>
+<p>PyBGPFlux was developed to fill this gap, providing a modern, maintained alternative that restores these capabilities.
+Rather than relying on simple bindings, PyBGPFlux is a library designed for maximum flexibility and resilience, utilizing Python to seamlessly integrate multiple parsers and brokers.</p>
 <h2 id="whats-the-difference-between-pybgpflux-and-pybgpstream">What's the difference between PyBGPFlux and PyBGPStream?<a class="headerlink" href="#whats-the-difference-between-pybgpflux-and-pybgpstream" title="Permanent link">&para;</a></h2>
-<p>PyBGPFlux is a drop-in replacement for PyBGPStream that uses BGPKIT for retrieve and parsing MRT files. Key advantages:</p>
+<p>PyBGPFlux is a drop-in replacement for PyBGPStream that uses by default BGPKIT for retrieve and parsing MRT files. Key advantages:</p>
 <ul>
-<li><strong>More flexible</strong>: Multiple parser backends</li>
+<li><strong>More flexible</strong>: Multiple parser and broker backends</li>
+<li><strong>No down time</strong>: BGPKIT broker and BGPFinder can be self-hosted</li>
 <li><strong>Modern Python</strong>: Type hints, pydantic for configuration</li>
-<li><strong>No down time</strong>: Uses BGPKIT broker that can be self-hosted</li>
 </ul>
 <p>Setting up the stream is different, but the output BGP elements have the same format.</p>
 <h2 id="can-i-use-this-with-live-data">Can I use this with live data?<a class="headerlink" href="#can-i-use-this-with-live-data" title="Permanent link">&para;</a></h2>
@@ -1282,7 +1311,7 @@
 <h2 id="the-stream-is-slow-how-do-i-improve-it">The stream is slow. How do I improve it?<a class="headerlink" href="#the-stream-is-slow-how-do-i-improve-it" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
-<p><strong>Switch parser</strong>: Use <code>pybgpstream</code> parser instead of <code>pybgpkit</code></p>
+<p><strong>Switch parser</strong>: Use <code>pybgpstream</code> or <code>bgpkit</code> parser instead of <code>pybgpkit</code></p>
 </li>
 <li>
 <p><strong>Add filters</strong>: Reduce the dataset</p>
