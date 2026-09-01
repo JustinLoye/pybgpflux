@@ -84,7 +84,7 @@ class BGPKITParser(BGPParser):
         self.filters = filters
 
         # Set timestamp for the same behavior as bgpdump default (timestamp match rib time, not last change)
-        self.time = int(dt_from_filepath(self.filepath).timestamp())
+        self.time = dt_from_filepath(self.filepath).timestamp()
 
     def _convert_rib(self, line: str) -> BGPElement:
         element = line.rstrip().split("|")

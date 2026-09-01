@@ -24,7 +24,7 @@ def config():
 def config_with_rib():
     """Configuration with RIBs from both projects."""
     rib_config = BGPStreamConfig(
-        start_time=datetime.datetime(2010, 9, 1, 0, 0),
+        start_time=datetime.datetime(2010, 8, 31, 23, 58),
         end_time=datetime.datetime(2010, 9, 1, 9, 0),
         collectors=["route-views.wide", "rrc06"],
         data_types=["ribs"],

@@ -157,19 +157,6 @@ wheels = [
 ]
 
 [[package]]
-name = "dataclasses-json"
-version = "0.6.7"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "marshmallow" },
-    { name = "typing-inspect" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/64/a4/f71d9cf3a5ac257c993b5ca3f93df5f7fb395c725e7f1e6479d2514173c3/dataclasses_json-0.6.7.tar.gz", hash = "sha256:b6b3e528266ea45b9535223bc53ca645f5208833c29229e847b3f26a1cc55fc0", size = 32227, upload-time = "2024-06-09T16:20:19.103Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c3/be/d0d44e092656fe7a06b55e6103cbce807cdbdee17884a5367c68c9860853/dataclasses_json-0.6.7-py3-none-any.whl", hash = "sha256:0dbf33f26c8d5305befd61b39d2b3414e8a407bedc2834dea9b8d642666fb40a", size = 28686, upload-time = "2024-06-09T16:20:16.715Z" },
-]
-
-[[package]]
 name = "exceptiongroup"
 version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -349,18 +336,6 @@ wheels = [
 ]
 
 [[package]]
-name = "marshmallow"
-version = "3.26.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "packaging" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ab/5e/5e53d26b42ab75491cda89b871dab9e97c840bf12c63ec58a1919710cd06/marshmallow-3.26.1.tar.gz", hash = "sha256:e6d8affb6cb61d39d26402096dc0aee12d5a26d490a121f118d2e81dc0719dc6", size = 221825, upload-time = "2025-02-03T15:32:25.093Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/34/75/51952c7b2d3873b44a0028b1bd26a25078c18f92f256608e8d1dc61b39fd/marshmallow-3.26.1-py3-none-any.whl", hash = "sha256:3350409f20a70a7e4e11a27661187b77cdcaeb20abca41c1454fe33636bea09c", size = 50878, upload-time = "2025-02-03T15:32:22.295Z" },
-]
-
-[[package]]
 name = "mergedeep"
 version = "1.3.4"
 source = { registry = "https://pypi.org/simple" }
@@ -487,15 +462,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/29/33/c225eaf898634bdda489a6766fc35d1683c640bffe0e0acd10646b13536d/mkdocstrings_python-2.0.3.tar.gz", hash = "sha256:c518632751cc869439b31c9d3177678ad2bfa5c21b79b863956ad68fc92c13b8", size = 199083, upload-time = "2026-02-20T10:38:36.368Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/32/28/79f0f8de97cce916d5ae88a7bee1ad724855e83e6019c0b4d5b3fabc80f3/mkdocstrings_python-2.0.3-py3-none-any.whl", hash = "sha256:0b83513478bdfd803ff05aa43e9b1fca9dd22bcd9471f09ca6257f009bc5ee12", size = 104779, upload-time = "2026-02-20T10:38:34.517Z" },
-]
-
-[[package]]
-name = "mypy-extensions"
-version = "1.1.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a2/6e/371856a3fb9d31ca8dac321cda606860fa4548858c0cc45d9d1d4ca2628b/mypy_extensions-1.1.0.tar.gz", hash = "sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558", size = 6343, upload-time = "2025-04-22T14:54:24.164Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963, upload-time = "2025-04-22T14:54:22.983Z" },
 ]
 
 [[package]]
@@ -643,7 +609,7 @@ test = [
 requires-dist = [
     { name = "aiofiles", specifier = ">=25.1.0" },
     { name = "httpx", specifier = ">=0.28.1" },
-    { name = "pybgpkit", specifier = ">=0.6.2" },
+    { name = "pybgpkit", specifier = "==0.8.0" },
     { name = "pydantic", specifier = ">=2.11.9" },
     { name = "websocket-client", specifier = ">=1.8.0" },
 ]
@@ -672,40 +638,27 @@ test = [
 
 [[package]]
 name = "pybgpkit"
-version = "0.6.2"
+version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "dataclasses-json" },
     { name = "pybgpkit-parser" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e2/0a/935c823e81f75712e8f04f3cfe57974b0bb5f0ee3050b1e1ff3ac29e3d15/pybgpkit-0.6.2.tar.gz", hash = "sha256:6c7f8df1fcc4a773d0dbacf0b3b66b0a5e6f71c87a71a4739ef58561bb3be47f", size = 6226, upload-time = "2025-06-12T17:42:52.263Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/05/99/85d7e5ffbda8eda94dab51eda0aa605762ecd56e6276623c304de0530417/pybgpkit-0.8.0.tar.gz", hash = "sha256:cab796ab68dcaf255e0299bc30cd96b86ba24bc2ead547efac68250d92947f4e", size = 6892, upload-time = "2026-07-02T18:14:40.803Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/c0/39fc38ef729b35146c3c34c284a81a27c0fd306dc56009bb8fc877ef67ff/pybgpkit-0.6.2-py3-none-any.whl", hash = "sha256:24f601bd5ef33818237de017cd1d29fde852fe6306e077b4048e6754b5ebf017", size = 7057, upload-time = "2025-06-12T17:42:49.956Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/09/c20945c330039afb1b549d8430bab1dae3d1e57c8165974cb95371ce8c32/pybgpkit-0.8.0-py3-none-any.whl", hash = "sha256:5e7cda9faa36d696d4dfdf2a2971cb687ea4f0adc7fcd64cb1032791bc5a4eff", size = 8208, upload-time = "2026-07-02T18:14:39.701Z" },
 ]
 
 [[package]]
 name = "pybgpkit-parser"
-version = "0.6.2"
+version = "0.18.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a1/45/6d4fe982e6b6bff8b3fb73ff15c8273c274183c9436865a185f5557af025/pybgpkit_parser-0.6.2.tar.gz", hash = "sha256:20a5937532edc8b7ded21e07ea01082ad90caa6c0182d1d4573c3c29880953b6", size = 21586, upload-time = "2025-06-12T17:39:32.001Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b1/44/f78e619827e8823a185e8dd79de9736b09c680281db403eb42bb44717d17/pybgpkit_parser-0.18.0.tar.gz", hash = "sha256:e131be45eb75568b2edbd0922657253d103d7b82ad9c8782ba735feb17a1f016", size = 31500, upload-time = "2026-07-02T18:13:41.864Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/88/4e/98cd220d99b53dc7727b82248eb6a3279ce532a7ea6557c4455bfeeaac23/pybgpkit_parser-0.6.2-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:c2fe780393b7a5ca7a1212e569f3bf52bc3a007b05f85e5d0e4bcf80eec7b5ca", size = 6826746, upload-time = "2025-06-12T17:44:17.405Z" },
-    { url = "https://files.pythonhosted.org/packages/03/99/9894da20ef4f4fd93388858f2f4e2c6023b5a527ad809c541553517df154/pybgpkit_parser-0.6.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:fa98ca3701a4cd179fcc995fcb7f4685f2884608bf46e1e5940fa3622162d380", size = 6071219, upload-time = "2025-06-12T17:39:23.091Z" },
-    { url = "https://files.pythonhosted.org/packages/3c/34/0d3de53825d29c35f61a62f0230af4e7474d336d8aeed60ff3c3c1aa6059/pybgpkit_parser-0.6.2-cp310-cp310-manylinux_2_34_aarch64.whl", hash = "sha256:8bab46f5ed709fe356f14e2f9a85114055c72cae36cead6d62a6579a67657963", size = 21905501, upload-time = "2025-06-12T17:41:37.51Z" },
-    { url = "https://files.pythonhosted.org/packages/57/a6/0d85d4af449f36e1fe96b1dfbadbd0d9221c6029af909b1ebd04ce3cec64/pybgpkit_parser-0.6.2-cp310-cp310-manylinux_2_34_x86_64.whl", hash = "sha256:994d400e9dcd9d67d2972f594234af86a2f33cad2cea73a8a2917cf8721f20fd", size = 23038197, upload-time = "2025-06-12T17:46:22.681Z" },
-    { url = "https://files.pythonhosted.org/packages/16/e1/ed153a5fa6490e3cd6fd3148276c03fe32f973f19b797b8a15d2a35fe96b/pybgpkit_parser-0.6.2-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:0c42fd855c6ec87bf52c7578c272d239b5bb662f2dcd8fc29215c5e58297e99d", size = 6825909, upload-time = "2025-06-12T17:44:18.819Z" },
-    { url = "https://files.pythonhosted.org/packages/0c/73/39c2f4c3a81158e30cc507dab4584a11a454158508decbe85ee148d8b169/pybgpkit_parser-0.6.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:98178d9781581ecc9e46d8acc9459c58e78878bd671a4cbfe497759d1c6fecd0", size = 6070918, upload-time = "2025-06-12T17:39:25.325Z" },
-    { url = "https://files.pythonhosted.org/packages/9c/74/b294ecabb9018c868f0d61d0e1d05e533b85af2c35bfe676a29253edba44/pybgpkit_parser-0.6.2-cp311-cp311-manylinux_2_34_aarch64.whl", hash = "sha256:d9769ae20a0c59085e51cd43761c081eac2d399ca1c744eddfdeaaa40170f2b7", size = 21904906, upload-time = "2025-06-12T17:41:40.369Z" },
-    { url = "https://files.pythonhosted.org/packages/61/b9/504bf0e4e8ad01ebc59992ff297a22dd228c29e048ff59d72a2973948027/pybgpkit_parser-0.6.2-cp311-cp311-manylinux_2_34_x86_64.whl", hash = "sha256:4191e1b5f1d08400e82e1881a593feee2c8f3ed2c4fd7130c7f02da1056e55b0", size = 23035200, upload-time = "2025-06-12T17:46:26.869Z" },
-    { url = "https://files.pythonhosted.org/packages/d4/6c/9f4d06df24f0e3ebb79d0653153cd7e7f62675f41f9fec3deee2ad7d60f2/pybgpkit_parser-0.6.2-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:aa341c9bb2b2564f89f44d0e973c5bc32ba647f7eec02ddb814151040c163f08", size = 6821257, upload-time = "2025-06-12T17:44:20.562Z" },
-    { url = "https://files.pythonhosted.org/packages/dd/5b/dd758fb116e1c73002d6223c24dcb7bbc6a89f625e273086b2295b692780/pybgpkit_parser-0.6.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:b3efb89c1826849bd308961eab28f94c6290e1ba70091f89f770d0c3965eba1e", size = 6066732, upload-time = "2025-06-12T17:39:27.025Z" },
-    { url = "https://files.pythonhosted.org/packages/62/f7/b91694592f58ea9b323f48aa23a0bd753d89a6db55dbcf57abf8a6ffe67e/pybgpkit_parser-0.6.2-cp312-cp312-manylinux_2_34_aarch64.whl", hash = "sha256:bd27fa010f2476af1c623a82939bc700becb2c9b802f402eba03d266a0dcebd3", size = 21898351, upload-time = "2025-06-12T17:41:42.806Z" },
-    { url = "https://files.pythonhosted.org/packages/0a/a7/e99e8f7eb401d35cc38e1587a958bce6c39c4f962b19e27488aab0e685a4/pybgpkit_parser-0.6.2-cp312-cp312-manylinux_2_34_x86_64.whl", hash = "sha256:bdea488aa5d6c65ae90518ddce68f53c65559bee325ef2442c39e8627e65b787", size = 23027518, upload-time = "2025-06-12T17:46:31.473Z" },
-    { url = "https://files.pythonhosted.org/packages/50/5c/217f028aeee7201d4bac82845a9ab87f655f5d095b3d4ea447e50c9f08b6/pybgpkit_parser-0.6.2-cp313-cp313-macosx_10_12_x86_64.whl", hash = "sha256:b01b02ce9fc26d1f52c59f8596c9a59c0c94cb73d36cf99f6ef464246ab8c912", size = 6821182, upload-time = "2025-06-12T17:44:22.598Z" },
-    { url = "https://files.pythonhosted.org/packages/da/3f/6e77903260aac71958908258a5cedb7beee08606eb09c4ceb93edcc4cb30/pybgpkit_parser-0.6.2-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:166d50afdd48fd617a2c7d34d7a84d3dccaf7ed8f54da7c06f4c74465b8e7df5", size = 6067222, upload-time = "2025-06-12T17:39:28.837Z" },
-    { url = "https://files.pythonhosted.org/packages/f8/74/b950abf5d4570a7500217551ca576caa007b22ba6f74f5881948a93b08cb/pybgpkit_parser-0.6.2-cp313-cp313-manylinux_2_34_aarch64.whl", hash = "sha256:9c52a45051d9add4adb93f20680f6b4eeafef99e5bcab904007766b061585c65", size = 21895604, upload-time = "2025-06-12T17:41:45.778Z" },
-    { url = "https://files.pythonhosted.org/packages/a1/31/cd3c679032cfd45de0657211854f33db66f54b73f61d039525f066e88fe6/pybgpkit_parser-0.6.2-cp313-cp313-manylinux_2_34_x86_64.whl", hash = "sha256:baf6ad6cc94f4bd2a4bee16c7388ea6e0b3d9c4e6c643a67e156aeb00b2f85c0", size = 23021836, upload-time = "2025-06-12T17:46:35.204Z" },
+    { url = "https://files.pythonhosted.org/packages/82/85/d8bba96758f88ef0586a819c5095857af8b7db676132509c704d6e892aca/pybgpkit_parser-0.18.0-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:34cfd0acb852427ab4dc58d3325da299b62b668ebcea9c7a71b2b31a94d4ca35", size = 4268589, upload-time = "2026-07-02T18:13:34.832Z" },
+    { url = "https://files.pythonhosted.org/packages/9a/95/c6b2fad3836021b336f500a9090a5366aca17773e09770c0dc4663cdb335/pybgpkit_parser-0.18.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:ab734081fa975f41d2b5a6f47d6b3755710e8b892aa671b3bc429a12dd650720", size = 4033093, upload-time = "2026-07-02T18:13:36.676Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/09/2954b18f44022efd24dc9ffde71b89108a983cce585794f1137562ec00f7/pybgpkit_parser-0.18.0-cp39-abi3-manylinux_2_38_x86_64.whl", hash = "sha256:f8a519a89ad658f081bedb47cb314ffe8108e9f3dd7592bd9017e39f28446aae", size = 4509045, upload-time = "2026-07-02T18:13:38.679Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/61/4cf198dab91bae820b0c4b06951317069a3c8a9a9a1e7582798dfbb8a54b/pybgpkit_parser-0.18.0-cp39-abi3-win_amd64.whl", hash = "sha256:c3392b70dd780e8ef07d8a67b31fbe08f166b928c5f0477dee4c5790fa390408", size = 3606425, upload-time = "2026-07-02T18:13:40.368Z" },
 ]
 
 [[package]]
@@ -997,19 +950,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/72/94/1a15dd82efb362ac84269196e94cf00f187f7ed21c242792a923cdb1c61f/typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466", size = 109391, upload-time = "2025-08-25T13:49:26.313Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548", size = 44614, upload-time = "2025-08-25T13:49:24.86Z" },
-]
-
-[[package]]
-name = "typing-inspect"
-version = "0.9.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "mypy-extensions" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/dc/74/1789779d91f1961fa9438e9a8710cdae6bd138c80d7303996933d117264a/typing_inspect-0.9.0.tar.gz", hash = "sha256:b23fc42ff6f6ef6954e4852c1fb512cdd18dbea03134f91f856a95ccc9461f78", size = 13825, upload-time = "2023-05-24T20:25:47.612Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/65/f3/107a22063bf27bdccf2024833d3445f4eea42b2e598abfbd46f6a63b6cb0/typing_inspect-0.9.0-py3-none-any.whl", hash = "sha256:9ee6fc59062311ef8547596ab6b955e1b8aa46242d854bfc78f4f6b0eff35f9f", size = 8827, upload-time = "2023-05-24T20:25:45.287Z" },
 ]
 
 [[package]]

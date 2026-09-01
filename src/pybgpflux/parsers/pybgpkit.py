@@ -5,6 +5,7 @@ import bgpkit  # pyright: ignore[reportMissingTypeStubs]
 from pybgpflux.bgpelement import BGPElement
 from pybgpflux.bgpstreamconfig import FilterOptions
 from pybgpflux.parsers.bgpparser import BGPParser
+from pybgpflux.utils import dt_from_filepath
 
 
 class PyBGPKITParser(BGPParser):
@@ -44,10 +45,28 @@ class PyBGPKITParser(BGPParser):
             self.bgpkit_filters["type"] = val
         if self.bgpkit_filters.get("peer_ips"):
             self.bgpkit_filters["peer_ips"] = ", ".join(self.bgpkit_filters["peer_ips"])
+            
+        # Set timestamp for the same behavior as bgpdump default (timestamp match rib time, not last change)
+        self.time = dt_from_filepath(self.filepath).timestamp()
 
-    def _convert(self, element: Any) -> BGPElement:
+    def _convert_rib(self, element: Any) -> BGPElement:
         return BGPElement(
-            type="R" if self.is_rib else element.elem_type,
+            type="R",
+            collector=self.collector,
+            time=self.time,
+            peer_asn=element.peer_asn,
+            peer_address=element.peer_ip,
+            fields={
+                "next-hop": element.next_hop,
+                "as-path": element.as_path,
+                "communities": [] if not element.communities else element.communities,
+                "prefix": element.prefix,
+            },
+        )
+        
+    def _convert_upd(self, element: Any) -> BGPElement:
+        return BGPElement(
+            type=element.elem_type,
             collector=self.collector,
             time=element.timestamp,
             peer_asn=element.peer_asn,
@@ -61,6 +80,7 @@ class PyBGPKITParser(BGPParser):
         )
 
     def __iter__(self) -> Iterator[BGPElement]:
+        convert = self._convert_rib if self.is_rib else self._convert_upd
         parser = bgpkit.Parser(self.filepath, filters=self.bgpkit_filters)  # type: ignore
         for elem in parser:  # type: ignore
-            yield self._convert(elem)
+            yield convert(elem)
