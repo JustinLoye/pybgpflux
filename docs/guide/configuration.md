@@ -110,6 +110,33 @@ config = BGPStreamConfig(
 )
 ```
 
+### RIB Period
+
+RIBs are large, and collectors dump them every couple of hours. `rib_period` is the
+equivalent of `bgpreader -p`: it sets the minimum amount of **archive time** between
+two RIBs of the same collector, so a long window can be processed without parsing
+every single snapshot. Updates are never affected.
+
+```python
+import datetime
+
+# Process every RIB (default)
+config = BGPStreamConfig(..., rib_period=None)
+
+# Process only the first RIB of each collector
+config = BGPStreamConfig(..., rib_period=datetime.timedelta(0))
+
+# Process the first RIB, then at most one every 12 hours
+config = BGPStreamConfig(..., rib_period=datetime.timedelta(hours=12))
+```
+
+The period is measured from the last RIB that was kept, not from a fixed grid, so
+collectors with irregular dump schedules never drift. Each collector is filtered
+independently, and the first available RIB is always kept.
+
+The filter is applied by the broker, so it also works when a broker is used on its
+own — see [Brokers](brokers.md).
+
 ## Implementation Parameters
 
 These optional parameters control how PyBGPFlux retrieves and processes data:

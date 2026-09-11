@@ -6,7 +6,7 @@ from pybgpflux.brokers.bgpbroker import BGPBroker, BrokerQueryError
 
 
 class BGPKITBroker(BGPBroker):
-    def query(self, config: BGPStreamConfig) -> list[BrokerItem]:
+    def _query(self, config: BGPStreamConfig) -> list[BrokerItem]:
         broker = bgpkit.Broker()
         items: list[BrokerItem] = []
 

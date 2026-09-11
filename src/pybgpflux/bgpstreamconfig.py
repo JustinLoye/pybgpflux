@@ -62,7 +62,19 @@ class BGPStreamConfig(BaseModel):
         default=["updates"],
         description="List of archives files to consider (`ribs` or `updates`)",
     )
+
+    # --- Optional query parameters ---
     filters: FilterOptions | None = Field(default=None, description="Optional filters")
+    rib_period: datetime.timedelta | None = Field(
+        default=None,
+        description=(
+            "Minimum archive-time interval between two consecutive RIBs of the same "
+            "collector, like `bgpreader -p`. The default (None) processes every RIB; "
+            "a zero or negative interval processes only the first RIB of each collector; "
+            "a positive interval processes the first RIB then skips the following ones "
+            "until that much archive time has elapsed. Updates are never affected."
+        ),
+    )
 
     # --- Implementation parameters (optional) ---
     max_concurrent_downloads: int | None = Field(

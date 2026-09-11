@@ -43,6 +43,7 @@ pybgpflux = "pybgpflux.cli:main"
 log_cli = true
 log_cli_level = "INFO"
 addopts = "-q -rs"
+norecursedirs = ["scratch", "data", "site", "*cache"]
 
 [project.urls]
 Repository = "https://github.com/JustinLoye/pybgpflux"

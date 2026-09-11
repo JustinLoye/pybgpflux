@@ -17,3 +17,9 @@ wheels/
 
 # doc
 site
+
+# Local scratch: debugging scripts and playgrounds, never shipped
+scratch/
+
+# Local data: MRT archives used by the examples and by hand
+data/

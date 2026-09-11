@@ -6,14 +6,14 @@ filters = FilterOptions(peer_asn=2497)
 bgpdump_parser = BGPdumpParser(
     collector="route-views.wide",
     is_rib=False,
-    filepath="updates.20100901.0000.bz2",
+    filepath="data/updates.20100901.0000.bz2",
     filters=filters,
 )
 
 bgpkit_parser = BGPKITParser(
     collector="route-views.wide",
     is_rib=False,
-    filepath="updates.20100901.0000.bz2",
+    filepath="data/updates.20100901.0000.bz2",
     filters=filters,
 )
 

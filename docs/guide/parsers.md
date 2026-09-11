@@ -71,7 +71,10 @@ stream = BGPStream.from_config(config)
 
 ## Using parsers on a single file
 
-You can also use parsers independently:
+You can also use parsers independently. The example below reads a local MRT file;
+download one from a collector archive first, for instance
+[updates.20100901.0000.bz2](http://archive.routeviews.org/route-views.wide/bgpdata/2010.09/UPDATES/updates.20100901.0000.bz2),
+and save it as `data/updates.20100901.0000.bz2`.
 
 ```python
 --8<-- "examples/parser_standalone.py"
