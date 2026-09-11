@@ -14,6 +14,7 @@ from pybgpflux.bgpstreamconfig import (
     LiveStreamConfig,
 )
 from pybgpflux.bgpelement import BGPElement
+from pybgpflux.brokers.bgpbroker import BGPBroker
 from pybgpflux.brokers.bgpstream import BGPStreamBroker
 from pybgpflux.brokers.bgpkit import BGPKITBroker
 from pybgpflux.parsers.bgpdump import BGPdumpParser
@@ -24,7 +25,7 @@ from pybgpflux.parsers.bgpparser import (
     BGPParser,
 )
 from pybgpflux.rislive import RISLiveStream, jitter_buffer_stream
-from pybgpflux.utils import Directory, get_shared_memory, dt_from_filepath
+from pybgpflux.utils import Directory, get_shared_memory
 from pybgpflux.downloader import (
     PREFETCH_SIZE,
     RCStream,
@@ -58,6 +59,7 @@ class BGPStream:
         ts_start (float | None): Start timestamp (Unix epoch). None for live mode.
         ts_end (float | None): End timestamp (Unix epoch). None for live mode.
         filters (FilterOptions): Filtering options for BGP elements.
+        rib_period (datetime.timedelta | None): Minimum interval between two RIBs of a collector.
         cache_dir (Directory | TemporaryDirectory): Cache directory for downloaded files.
         parser_name (str): Backend parser to use ("pybgpkit", "bgpkit", "bgpdump", "pybgpstream").
         max_concurrent_downloads (int): Maximum concurrent file downloads.
@@ -113,6 +115,7 @@ class BGPStream:
         ts_start: datetime.datetime | None = None,
         ts_end: datetime.datetime | None = None,
         filters: FilterOptions | None = None,
+        rib_period: datetime.timedelta | None = None,
         cache_dir: str | None = None,
         max_concurrent_downloads: int | None = 10,
         ram_fetch: bool | None = True,
@@ -129,6 +132,9 @@ class BGPStream:
             ts_start: Start timestamp (Unix epoch) for historical data. None for live mode.
             ts_end: End timestamp (Unix epoch) for historical data. None for live mode.
             filters: Optional FilterOptions to filter BGP elements. Defaults to no filtering.
+            rib_period: Minimum archive-time interval between two RIBs of the same collector.
+                None (default) processes every RIB, a zero or negative interval processes
+                only the first RIB of each collector.
             cache_dir: Directory to cache downloaded MRT files. If None, uses temporary directory.
             max_concurrent_downloads: Maximum concurrent downloads. Default is 10.
             ram_fetch: Use RAM disk for temporary files if available. Default is True.
@@ -152,6 +158,7 @@ class BGPStream:
         if not filters:
             filters = FilterOptions()
         self.filters = filters
+        self.rib_period = rib_period
 
         # Implementation config
         if max_concurrent_downloads:
@@ -175,6 +182,7 @@ class BGPStream:
         if cache_dir:
             self.remote_parse = False
 
+        self.broker: BGPBroker
         match broker:
             case "bgpkit":
                 self.broker = BGPKITBroker()
@@ -195,7 +203,7 @@ class BGPStream:
         self.jitter_buffer_delay = jitter_buffer_delay
 
     def _set_urls(self):
-        """Set archive files URL with a broker and setup prefetch queues"""
+        """Set archive files URL with a broker and initialize prefetch queues"""
         self.urls: RCUrlsWithQueues = {
             "ribs": defaultdict(lambda: ([], asyncio.Queue(maxsize=PREFETCH_SIZE))),
             "updates": defaultdict(lambda: ([], asyncio.Queue(maxsize=PREFETCH_SIZE))),
@@ -205,9 +213,10 @@ class BGPStream:
             end_time=self.ts_end,
             collectors=self.collectors,
             data_types=self.data_types,
+            rib_period=self.rib_period,
         )
+        # Broker results are already sorted by start time
         items = self.broker.query(config)
-        items.sort(key=lambda item: dt_from_filepath(item.url))
 
         for item in items:
             self.urls[item.data_type][item.collector_id][0].append(item.url)
@@ -355,6 +364,7 @@ class BGPStream:
                         collectors=config.collectors,
                         data_types=config.data_types,
                         filters=config.filters if config.filters else FilterOptions(),
+                        rib_period=config.rib_period,
                         cache_dir=str(config.cache_dir) if config.cache_dir else None,
                         max_concurrent_downloads=config.max_concurrent_downloads
                         if config.max_concurrent_downloads
@@ -364,6 +374,7 @@ class BGPStream:
                         remote_parse=config.remote_parse
                         if config.remote_parse
                         else True,
+                        broker=config.broker,
                     )
                 else:
                     return cls(

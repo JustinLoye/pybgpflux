@@ -1,8 +1,9 @@
 # Broker query implementation for BGPStream V2 and bgpfinder broker
+from concurrent.futures import ThreadPoolExecutor
 import datetime
 from typing import Any, Literal
 
-from bgpkit.bgpkit_broker import BrokerItem # pyright: ignore[reportMissingTypeStubs]
+from bgpkit.bgpkit_broker import BrokerItem  # pyright: ignore[reportMissingTypeStubs]
 import httpx
 from pydantic import AnyUrl, BaseModel
 from urllib import parse  # weird import to make pyright happy
@@ -15,6 +16,13 @@ EpochTime = int | datetime.datetime
 IntervalType = tuple[EpochTime, EpochTime]
 BgpDataType = Literal["ribs", "updates"]
 BgpResourceType = Literal["stream", "batch"]
+
+# Floor on the window a single broker request is assumed to cover. Responses
+# are capped server-side, by time on some deployments and by file count on
+# others, so the real page size is measured per query and this is only the
+# fallback for a response that shows nothing.
+MIN_CHUNK_SECONDS = 3600
+MAX_BROKER_WORKERS = 8
 
 
 class BGPStreamBrokerQuery(BaseModel):
@@ -141,12 +149,21 @@ class BGPStreamBrokerItem(BaseModel):
     duration: int
     attr: list[Any] = []
 
+    @staticmethod
+    def _to_bgpkit_ts(epoch: int) -> str:
+        """Format an epoch as the naive UTC ISO-8601 string bgpkit uses."""
+        return (
+            datetime.datetime.fromtimestamp(epoch, tz=datetime.timezone.utc)
+            .replace(tzinfo=None)
+            .isoformat()
+        )
+
     def to_bgpkit_item(self) -> BrokerItem:
         """Converts CAIDA format to bgpkit BrokerItem."""
         # Assuming BrokerItem structure based on bgpkit requirements
         return BrokerItem(
-            ts_start=str(self.initialTime),
-            ts_end=str(self.initialTime + self.duration),
+            ts_start=self._to_bgpkit_ts(self.initialTime),
+            ts_end=self._to_bgpkit_ts(self.initialTime + self.duration),
             collector_id=self.collector,
             data_type=self.type,
             url=str(self.url),
@@ -185,11 +202,10 @@ class BGPStreamBroker(BGPBroker):
         self.url = url
         super().__init__()
 
-    def query(self, config: BGPStreamConfig) -> list[BrokerItem]:
-        bgpstream_query = BGPStreamBrokerQuery.from_config(config)
-
+    def _fetch_page(self, query: BGPStreamBrokerQuery) -> list[BGPStreamBrokerItem]:
+        """Run one broker request and return its resources."""
         try:
-            response = httpx.get(f"{self.url}/data?{bgpstream_query.to_query_string()}")
+            response = httpx.get(f"{self.url}/data?{query.to_query_string()}")
             response.raise_for_status()
         except httpx.HTTPError as exc:
             raise BrokerQueryError(
@@ -207,4 +223,85 @@ class BGPStreamBroker(BGPBroker):
         if envelope.error:
             raise BrokerQueryError(f"BGPStream API returned error: {envelope.error}")
 
-        return [item.to_bgpkit_item() for item in envelope.data.resources]
+        return envelope.data.resources
+
+    def _chunk_query(
+        self, config: BGPStreamConfig, interval: IntervalType
+    ) -> BGPStreamBrokerQuery:
+        query = BGPStreamBrokerQuery.from_config(config)
+        query.intervals = [interval]
+        return query
+
+    def _page_span(
+        self, config: BGPStreamConfig, page: list[BGPStreamBrokerItem], start: int
+    ) -> int:
+        """How far past `start` this response reached, for its least covered group.
+
+        A response is a prefix of the matching files, so the last file of a
+        (collector, data type) marks how much of the window that group was
+        given. The smallest of those spans is how far the whole response can be
+        trusted; a group with nothing to show contributes the floor, since all
+        that proves is an empty window.
+        """
+        group_span = {
+            (collector, data_type): MIN_CHUNK_SECONDS
+            for collector in config.collectors
+            for data_type in config.data_types
+        }
+        for resource in page:
+            if resource.initialTime < start:
+                continue  # the archive preceding the window, not coverage of it
+            key = (resource.collector, resource.type)
+            group_span[key] = max(
+                group_span.get(key, MIN_CHUNK_SECONDS), resource.initialTime - start
+            )
+        return max(min(group_span.values()), MIN_CHUNK_SECONDS)
+
+    def _query(self, config: BGPStreamConfig) -> list[BrokerItem]:
+        """Query the interval, in as few requests as the deployment allows.
+
+        A BGPStream v2 response is capped, silently, and the cap differs per
+        deployment: CAIDA returns less than two hours of archive data whatever
+        interval is asked for, while bgpfinder returns around five hundred
+        files. Either way a single request silently returns a prefix of a long
+        window. The `minInitialTime` cursor is not a way out: for sparse data
+        types it can return the same file again, making no progress, or skip
+        one entirely.
+
+        So the page size is measured instead of assumed. The first request asks
+        for the whole interval and reveals how much of it the server is willing
+        to serve at once; the remainder is then tiled with chunks of that size,
+        which are independent and run concurrently. On a generous deployment
+        this is two requests; on a stingy one it degrades to one request per
+        `MIN_CHUNK_SECONDS` of stream.
+
+        Chunks overlap by one file, since the broker also returns the archive
+        preceding a window, hence the deduplication by URL.
+        """
+        assert config.start_time
+        assert config.end_time
+        start = int(config.start_time.timestamp())
+        end = int(config.end_time.timestamp())
+
+        pages = [self._fetch_page(self._chunk_query(config, (start, end)))]
+
+        chunk = self._page_span(config, pages[0], start)
+        if start + chunk < end:
+            queries = [
+                self._chunk_query(config, (chunk_start, min(chunk_start + chunk, end)))
+                for chunk_start in range(start + chunk + 1, end + 1, chunk + 1)
+            ]
+            with ThreadPoolExecutor(
+                max_workers=min(len(queries), MAX_BROKER_WORKERS)
+            ) as pool:
+                pages.extend(pool.map(self._fetch_page, queries))
+
+        items: list[BrokerItem] = []
+        seen: set[str] = set()
+        for page in pages:
+            for resource in page:
+                url = str(resource.url)
+                if url not in seen:
+                    seen.add(url)
+                    items.append(resource.to_bgpkit_item())
+        return items

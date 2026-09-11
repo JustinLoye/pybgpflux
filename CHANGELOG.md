@@ -1,5 +1,37 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- `rib_period` option on `BGPStreamConfig` and `BGPStream`, equivalent to `bgpreader -p`:
+  sets the minimum archive-time interval between two RIBs of the same collector.
+  `None` (default) keeps every RIB, a zero or negative interval keeps only the first
+  RIB of each collector, and a positive interval keeps the first RIB then skips the
+  following ones until that much archive time has elapsed. Updates are never affected.
+  Also exposed on the CLI as `--rib-period <seconds>`.
+- `BGPBroker` is now a base class with a template `query()` method, so broker-level
+  query options such as `rib_period` apply to every broker, including when a broker
+  is used standalone. Backends implement `_query()`.
+- `BGPBroker.query()` guarantees results sorted by ascending archive start time.
+
+### Changed
+
+- `BGPStreamBroker` now stamps `BrokerItem.ts_start`/`ts_end` with the same ISO-8601
+  format as the BGPKIT broker instead of raw epoch seconds.
+
+### Fixed
+
+- **`bgpstream` and `bgpfinder` brokers silently truncated long windows.** The
+  BGPStream v2 API caps every response — by archive time on CAIDA (under two
+  hours), by file count on BGPFinder (around five hundred) — so any longer stream
+  was built from a prefix of the available files: a two-day window returned 32 of
+  801 archives. The page size is now measured from the first response and the rest
+  of the interval is tiled with chunks of that size, queried concurrently. All
+  three brokers return the same file list for the same window.
+- `BGPStream.from_config` now forwards the `broker` setting from `BGPStreamConfig`
+  (it previously always used the default BGPKIT broker).
+
 ## [0.5.2] - 2026-06-19
 
 ### Added

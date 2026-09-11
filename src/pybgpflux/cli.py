@@ -44,6 +44,16 @@ def main():
         help="List of archives to consider ('ribs' or 'updates').",
     )
 
+    parser.add_argument(
+        "--rib-period",
+        type=float,
+        default=None,
+        help=(
+            "Minimum number of seconds between two RIBs of the same collector. "
+            "0 or negative processes only the first RIB of each collector."
+        ),
+    )
+
     # Arguments for FilterOptions
     parser.add_argument(
         "--origin-asn",
@@ -147,6 +157,9 @@ def main():
         collectors=args.collectors,
         data_types=args.data_types,
         filters=filter_options,
+        rib_period=datetime.timedelta(seconds=args.rib_period)
+        if args.rib_period is not None
+        else None,
         cache_dir=args.cache_dir,
         parser=args.parser,
     )
