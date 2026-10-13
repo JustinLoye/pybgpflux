@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper below."
+title: "pybgpflux"
+authors:
+  - family-names: Loye
+    given-names: Justin
+repository-code: "https://github.com/JustinLoye/pybgpflux"
+preferred-citation:
+  type: conference-paper
+  title: "Poster: BGPFlux: Streamlining Access to BGP Data"
+  authors:
+    - family-names: Loye
+      given-names: Justin
+    - family-names: Krenc
+      given-names: Thomas
+    - family-names: Fontugne
+      given-names: Romain
+  collection-title: "Proceedings of the 2026 ACM Internet Measurement Conference"
+  conference:
+    name: "ACM Internet Measurement Conference (IMC 2026)"
+  publisher:
+    name: "ACM"
+  doi: "10.1145/3777912.3847588"
+  start: 1203
+  end: 1204
+  year: 2026
