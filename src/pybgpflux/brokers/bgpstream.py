@@ -4,7 +4,7 @@ import datetime
 from typing import Any, Literal
 
 from bgpkit.bgpkit_broker import BrokerItem  # pyright: ignore[reportMissingTypeStubs]
-import httpx
+import httpx2
 from pydantic import AnyUrl, BaseModel
 from urllib import parse  # weird import to make pyright happy
 
@@ -205,9 +205,9 @@ class BGPStreamBroker(BGPBroker):
     def _fetch_page(self, query: BGPStreamBrokerQuery) -> list[BGPStreamBrokerItem]:
         """Run one broker request and return its resources."""
         try:
-            response = httpx.get(f"{self.url}/data?{query.to_query_string()}")
+            response = httpx2.get(f"{self.url}/data?{query.to_query_string()}")
             response.raise_for_status()
-        except httpx.HTTPError as exc:
+        except httpx2.HTTPError as exc:
             raise BrokerQueryError(
                 f"Network request to BGPStream failed: {exc}"
             ) from exc

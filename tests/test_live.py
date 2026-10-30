@@ -12,6 +12,7 @@ def rislive_config():
     )
 
 
+@pytest.mark.live
 def test_rislive(rislive_config):
     stream = BGPStream.from_config(rislive_config)
 

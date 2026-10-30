@@ -9,7 +9,7 @@ authors = [
 requires-python = ">=3.10"
 dependencies = [
     "aiofiles>=25.1.0",
-    "httpx>=0.28.1",
+    "httpx2>=2.14.0",
     "pybgpkit>=0.6.2",
     "pydantic>=2.11.9",
     "websocket-client>=1.8.0",
@@ -42,7 +42,10 @@ pybgpflux = "pybgpflux.cli:main"
 [tool.pytest.ini_options]
 log_cli = true
 log_cli_level = "INFO"
-addopts = "-q -rs"
+addopts = "-q -rs -m 'not live'"
+markers = [
+    "live: hits live network services (RIS Live); flaky, skipped by default",
+]
 norecursedirs = ["scratch", "data", "site", "*cache"]
 
 [project.urls]
