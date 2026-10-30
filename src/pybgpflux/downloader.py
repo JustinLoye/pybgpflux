@@ -7,7 +7,7 @@ import logging
 from typing import Iterator
 
 import aiofiles
-import httpx
+import httpx2
 
 from pybgpflux.parsers.bgpparser import BGPParser
 from pybgpflux.bgpstreamconfig import FilterOptions
@@ -156,7 +156,7 @@ def generate_cache_filename(url: str) -> str:
 async def download_file(
     url: str,
     filepath: str,
-    client: httpx.AsyncClient,
+    client: httpx2.AsyncClient,
     semaphore: asyncio.Semaphore,
 ) -> str:
     while True:
@@ -189,7 +189,7 @@ async def download_file(
                                             await fd.write(chunk)
                                 os.rename(temp_filepath, filepath)
                                 return filepath
-                            except (httpx.HTTPError, asyncio.TimeoutError) as e:
+                            except (httpx2.HTTPError, asyncio.TimeoutError) as e:
                                 if attempt < MAX_RETRIES:
                                     await asyncio.sleep(INITIAL_BACKOFF * (2**attempt))
                                 else:
@@ -214,7 +214,7 @@ async def download_all(urls: RCUrlsWithQueues, cache_dir: str, max_concurrent: i
     if not is_remote_parsing:
         _sweep_stale(cache_dir)
 
-    async with httpx.AsyncClient(timeout=httpx.Timeout(None, read=300.0)) as client:
+    async with httpx2.AsyncClient(timeout=httpx2.Timeout(None, read=300.0)) as client:
 
         async def worker(collector: str, url_list: list[str], async_q: asyncio.Queue[str | None]):
             # For remote parsing, don't need to prefetch. So simply queue url.
