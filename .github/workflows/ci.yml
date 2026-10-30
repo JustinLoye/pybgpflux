@@ -15,7 +15,7 @@ on:
 jobs:
   build:
     name: continuous-integration
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: for ubuntu 26 libbgpstream compilation breaks (can be fixed by adding a flag) and performance is terrible (to be fixed in upcoming wandio 4.2.8)
     strategy:
       matrix:
         python-version:
